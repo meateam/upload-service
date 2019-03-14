@@ -1,8 +1,8 @@
 package main
 
 import (
+	"io"
 	"fmt"
-	"mime/multipart"
 	"net/http"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -16,7 +16,7 @@ type UploadService struct {
 }
 
 // UploadFile uploads a file to the given bucket in S3
-func (s UploadService) UploadFile(file multipart.File, key *string, bucket *string) (*s3manager.UploadOutput, error) {
+func (s UploadService) UploadFile(file io.Reader, key *string, bucket *string) (*string, error) {
 
 	// Create an uploader with S3 client and custom options
 	uploader := s3manager.NewUploaderWithClient(s.s3Client, func(u *s3manager.Uploader) {
@@ -34,7 +34,7 @@ func (s UploadService) UploadFile(file multipart.File, key *string, bucket *stri
 		return nil, fmt.Errorf("failed to upload data to %s/%s: %v", *bucket, *key, err)
 	}
 
-	return output, nil
+	return &output.Location, nil
 }
 
 // UploadHandler handles upload requests by uploading the file's data to aws-s3 Object Storage
@@ -81,5 +81,5 @@ func (h UploadHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 	}
 
-	w.Write([]byte(output.Location))
+	w.Write([]byte(*output))
 }

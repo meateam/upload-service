@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-package uploadservice;
+package upload;
 
 // Interface exported by the server.
-service UploadService {
+service Upload {
     // The function Uploads the given file.
     //
     // Returns the Location of the file as output.
@@ -12,40 +12,20 @@ service UploadService {
     rpc UploadFile(UploadRequest) returns (UploadResponse) {}
 }
 
-// File is a parsed multipart form.
-message File {
-    // This a strings array.
-    message stringArray {
-        repeated string val = 1;
-    }
-
-    // This represents fileheader type of the mime/multipart package.
-    message fileHeader {
-        string FileName = 1;
-        map<string, stringArray> Header = 2;
-        int64 Size = 3;
-    }
-
-    // This is an array of fileHeaders.
-    message fileHeaderArray {
-        repeated fileHeader val = 1;
-    }
-
-    map<string, stringArray> Value = 1;
-    map<string, fileHeaderArray> File = 2;
-}
-
 // UploadRequest is the request for Upload.
 message UploadRequest {
-    // file is the file to upload.
-    File file = 1;
+    // File is the file to upload.
+    bytes file = 1;
+
+    // File key to store in S3
+    string key = 2;
 
     // The bucket we want to upload the file to.
-    string bucket = 2;
+    string bucket = 3;
 }
 
 // UploadResponse is the response for Upload.
 message UploadResponse {
     // The location that the file uploaded to.
-    bytes output = 1;
+    string output = 1;
 }
