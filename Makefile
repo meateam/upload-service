@@ -18,4 +18,4 @@ run:
 		go build -o $(BINARY_NAME) -v
 		./$(BINARY_NAME)
 deps:
-		go get -u github.com/golang/protobuf/protoc-gen-go
+		go get -u github.com/golang/protobuf

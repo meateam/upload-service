@@ -1,22 +1,24 @@
 package main
 
 import (
+	"net"
 	"log"
 	"os/signal"
-	"net/http"
 	"os"
-
+	pb "upload-service/proto"
+	
+	"google.golang.org/grpc"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/gorilla/mux"
 )
 
 func main() {
 	s3AccessKey := os.Getenv("S3_ACCESS_KEY")
     s3SecretKey := os.Getenv("S3_SECRET_KEY")
     s3Endpoint  := os.Getenv("S3_ENDPOINT")
+	tcpPort		:= os.Getenv("TCP_PORT")
 	s3Token     := ""
 
 	// Configure to use S3 Server
@@ -27,19 +29,17 @@ func main() {
 		DisableSSL:       aws.Bool(true),
 		S3ForcePathStyle: aws.Bool(true),
 	}
-
 	newSession := session.New(s3Config)
 	s3Client := s3.New(newSession)
-	uploadHandler := UploadHandler{
-		UploadService: UploadService{s3Client: s3Client},
-		BucketService: BucketService{s3Client: s3Client},
+	lis, err := net.Listen("tcp", ":" + tcpPort)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
 	}
-	r := mux.NewRouter()
-	r.HandleFunc("/upload", uploadHandler.Upload).Methods("POST")
-	http.Handle("/", r)
-	go func() {
-		log.Fatal(http.ListenAndServe(":8080", nil))
-    }()
+	
+	grpcServer := grpc.NewServer()
+	server := &UploadHandler{ UploadService: UploadService{ s3Client: s3Client }}
+	pb.RegisterUploadServer(grpcServer, server)
+	grpcServer.Serve(lis)
 	signalChan := make(chan os.Signal, 1)
     signal.Notify(signalChan, os.Interrupt)
     <-signalChan

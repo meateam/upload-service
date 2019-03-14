@@ -9,7 +9,7 @@ service Upload {
     // Returns the Location of the file as output.
     //
     // In case of an error the error is returned.
-    rpc UploadFile(UploadRequest) returns (UploadResponse) {}
+    rpc Upload(UploadRequest) returns (UploadResponse) {}
 }
 
 // UploadRequest is the request for Upload.

@@ -1,11 +1,12 @@
 
 #build stage
 FROM golang:alpine AS builder
+ENV GO111MODULE=on
 WORKDIR /go/src/app
 COPY . .
-RUN apk add --no-cache git
-RUN go get -d -v ./...
-RUN go install -v ./...
+RUN apk add --no-cache git make
+RUN make deps
+RUN make build
 
 #final stage
 FROM alpine:latest

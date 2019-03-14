@@ -2,8 +2,10 @@ package main
 
 import (
 	"io"
+	"bytes"
+	"context"
 	"fmt"
-	"net/http"
+	pb "upload-service/proto"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -17,6 +19,19 @@ type UploadService struct {
 
 // UploadFile uploads a file to the given bucket in S3
 func (s UploadService) UploadFile(file io.Reader, key *string, bucket *string) (*string, error) {
+	bucketService := BucketService{s3Client: s.s3Client}
+	bucketExists  := bucketService.BucketExists(bucket)
+
+	if bucketExists == false {
+		bucketExists, err := bucketService.CreateBucket(bucket)
+		if err != nil {
+			return nil, fmt.Errorf("failed to upload file to %s/%s: %v", *bucket, *key, err)
+		}
+
+		if bucketExists == false {
+			return nil, fmt.Errorf("failed to upload file to %s/%s: bucket %s does not exist", *bucket, *key, *bucket)
+		}
+	}
 
 	// Create an uploader with S3 client and custom options
 	uploader := s3manager.NewUploaderWithClient(s.s3Client, func(u *s3manager.Uploader) {
@@ -40,46 +55,19 @@ func (s UploadService) UploadFile(file io.Reader, key *string, bucket *string) (
 // UploadHandler handles upload requests by uploading the file's data to aws-s3 Object Storage
 type UploadHandler struct {
 	UploadService
-	BucketService
 }
 
 // Upload is the request handler for file uploads, it is responsible for getting the file
 // from the request's body and uploading it to the bucket of the user who uploaded it
-func (h UploadHandler) Upload(w http.ResponseWriter, r *http.Request) {
-	r.ParseMultipartForm(32 << 20) // 32 MB
-	file, handler, err := r.FormFile("uploadfile")
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	defer file.Close()
-	defer r.MultipartForm.RemoveAll()
-
-	// TODO: Should be getting bucket name based on the user who's uploading this file
-	bucket := aws.String("testbucket")
-	key := aws.String(handler.Filename)
-
-	// Create the bucket to upload to if it doesn't exist
-	bucketExists := h.BucketExists(bucket)
-
-	if bucketExists == false {
-		bucketExists, err := h.CreateBucket(bucket)
-		if err != nil {
-			http.Error(w, fmt.Errorf("failed to upload file to %s/%s: %v", *bucket, *key, err).Error(), 500)
-			return
-		}
-
-		if bucketExists == false {
-			http.Error(w, fmt.Errorf("failed to upload file to %s/%s: bucket %s does not exist", *bucket, *key, *bucket).Error(), 500)
-			return
-		}
-	}
-
+func (h UploadHandler) Upload(ctx context.Context, request *pb.UploadRequest) (*pb.UploadResponse, error) {
+	bucket 		:= aws.String(request.Bucket)
+	key 		:= aws.String(request.Key)
+	file 		:= bytes.NewReader(request.File)
 	output, err := h.UploadFile(file, key, bucket)
+
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		return nil, err
 	}
 
-	w.Write([]byte(*output))
+	return &pb.UploadResponse{Output: *output}, nil
 }
