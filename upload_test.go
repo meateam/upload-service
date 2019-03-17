@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -43,7 +44,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *string
+		want    string
 		wantErr bool
 	}{
 		{
@@ -54,7 +55,8 @@ func TestUploadService_UploadFile(t *testing.T) {
 				bucket: aws.String("testbucket"),
 				file:   bytes.NewReader([]byte("Hello, World!")),
 			},
-			wantErr: true,
+			wantErr: false,
+			want:    fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint),
 		},
 	}
 
@@ -68,7 +70,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 				t.Errorf("UploadService.UploadFile() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.want {
+			if *got != tt.want {
 				t.Errorf("UploadService.UploadFile() = %v, want %v", got, tt.want)
 			}
 		})
