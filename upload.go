@@ -19,6 +19,14 @@ type UploadService struct {
 
 // UploadFile uploads a file to the given bucket in S3
 func (s UploadService) UploadFile(file io.Reader, key *string, bucket *string) (*string, error) {
+	if key == nil || *key == "" {
+		return nil, fmt.Errorf("key is required")
+	}
+
+	if bucket == nil || *bucket == "" {
+		return nil, fmt.Errorf("bucket name is required")
+	}
+
 	bucketService := BucketService{s3Client: s.s3Client}
 	bucketExists := bucketService.BucketExists(bucket)
 

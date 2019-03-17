@@ -69,6 +69,46 @@ func TestUploadService_UploadFile(t *testing.T) {
 			wantErr: false,
 			want:    aws.String(fmt.Sprintf("%s/testbucket/testfolder/testfile.txt", s3Endpoint)),
 		},
+		{
+			name:   "Upload file with empty key",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				key:    aws.String(""),
+				bucket: aws.String("testbucket"),
+				file:   bytes.NewReader([]byte("Hello, World!")),
+			},
+			wantErr: true,
+		},
+		{
+			name:   "Upload file with empty bucket",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				key:    aws.String("testfile.txt"),
+				bucket: aws.String(""),
+				file:   bytes.NewReader([]byte("Hello, World!")),
+			},
+			wantErr: true,
+		},
+		{
+			name:   "Upload file with nil key",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				key:    nil,
+				bucket: aws.String("testbucket"),
+				file:   bytes.NewReader([]byte("Hello, World!")),
+			},
+			wantErr: true,
+		},
+		{
+			name:   "Upload file with nil bucket",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				key:    aws.String("testfile.txt"),
+				bucket: nil,
+				file:   bytes.NewReader([]byte("Hello, World!")),
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -76,12 +116,14 @@ func TestUploadService_UploadFile(t *testing.T) {
 			s := UploadService{
 				s3Client: tt.fields.s3Client,
 			}
+
 			got, err := s.UploadFile(tt.args.file, tt.args.key, tt.args.bucket)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UploadService.UploadFile() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if *got != *tt.want {
+
+			if got != nil && *got != *tt.want {
 				t.Errorf("UploadService.UploadFile() = %v, want %v", got, tt.want)
 			}
 		})
