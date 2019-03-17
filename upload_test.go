@@ -2,12 +2,13 @@ package main
 
 import (
 	"bytes"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws"
-	"os"
 	"io"
+	"os"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
 
 	"github.com/aws/aws-sdk-go/service/s3"
 )
@@ -23,9 +24,9 @@ func TestUploadService_UploadFile(t *testing.T) {
 	}
 
 	s3AccessKey := os.Getenv("S3_ACCESS_KEY")
-    s3SecretKey := os.Getenv("S3_SECRET_KEY")
-    s3Endpoint  := os.Getenv("S3_ENDPOINT")
-	s3Token     := ""
+	s3SecretKey := os.Getenv("S3_SECRET_KEY")
+	s3Endpoint := os.Getenv("S3_ENDPOINT")
+	s3Token := ""
 
 	// Configure to use S3 Server
 	s3Config := &aws.Config{
@@ -46,17 +47,17 @@ func TestUploadService_UploadFile(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "basic test",
-			fields: fields{ s3Client: s3Client },
+			name:   "basic test",
+			fields: fields{s3Client: s3Client},
 			args: args{
-				key: aws.String("testfile.txt"),
+				key:    aws.String("testfile.txt"),
 				bucket: aws.String("testbucket"),
-				file: bytes.NewReader([]byte("Hello, World!")),
+				file:   bytes.NewReader([]byte("Hello, World!")),
 			},
 			wantErr: true,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := UploadService{

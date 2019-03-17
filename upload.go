@@ -1,10 +1,10 @@
 package main
 
 import (
-	"io"
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	pb "upload-service/proto"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -20,7 +20,7 @@ type UploadService struct {
 // UploadFile uploads a file to the given bucket in S3
 func (s UploadService) UploadFile(file io.Reader, key *string, bucket *string) (*string, error) {
 	bucketService := BucketService{s3Client: s.s3Client}
-	bucketExists  := bucketService.BucketExists(bucket)
+	bucketExists := bucketService.BucketExists(bucket)
 
 	if bucketExists == false {
 		bucketExists, err := bucketService.CreateBucket(bucket)
@@ -60,9 +60,9 @@ type UploadHandler struct {
 // Upload is the request handler for file uploads, it is responsible for getting the file
 // from the request's body and uploading it to the bucket of the user who uploaded it
 func (h UploadHandler) Upload(ctx context.Context, request *pb.UploadRequest) (*pb.UploadResponse, error) {
-	bucket 		:= aws.String(request.Bucket)
-	key 		:= aws.String(request.Key)
-	file 		:= bytes.NewReader(request.File)
+	bucket := aws.String(request.Bucket)
+	key := aws.String(request.Key)
+	file := bytes.NewReader(request.File)
 	output, err := h.UploadFile(file, key, bucket)
 
 	if err != nil {

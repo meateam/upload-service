@@ -1,25 +1,25 @@
 package main
 
 import (
-	"net"
 	"log"
-	"os/signal"
+	"net"
 	"os"
+	"os/signal"
 	pb "upload-service/proto"
-	
-	"google.golang.org/grpc"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"google.golang.org/grpc"
 )
 
 func main() {
 	s3AccessKey := os.Getenv("S3_ACCESS_KEY")
-    s3SecretKey := os.Getenv("S3_SECRET_KEY")
-    s3Endpoint  := os.Getenv("S3_ENDPOINT")
-	tcpPort		:= os.Getenv("TCP_PORT")
-	s3Token     := ""
+	s3SecretKey := os.Getenv("S3_SECRET_KEY")
+	s3Endpoint := os.Getenv("S3_ENDPOINT")
+	tcpPort := os.Getenv("TCP_PORT")
+	s3Token := ""
 
 	// Configure to use S3 Server
 	s3Config := &aws.Config{
@@ -31,16 +31,16 @@ func main() {
 	}
 	newSession := session.New(s3Config)
 	s3Client := s3.New(newSession)
-	lis, err := net.Listen("tcp", ":" + tcpPort)
+	lis, err := net.Listen("tcp", ":"+tcpPort)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	
+
 	grpcServer := grpc.NewServer()
-	server := &UploadHandler{ UploadService: UploadService{ s3Client: s3Client }}
+	server := &UploadHandler{UploadService: UploadService{s3Client: s3Client}}
 	pb.RegisterUploadServer(grpcServer, server)
 	grpcServer.Serve(lis)
 	signalChan := make(chan os.Signal, 1)
-    signal.Notify(signalChan, os.Interrupt)
-    <-signalChan
+	signal.Notify(signalChan, os.Interrupt)
+	<-signalChan
 }
