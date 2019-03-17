@@ -44,11 +44,11 @@ func TestUploadService_UploadFile(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    string
+		want    *string
 		wantErr bool
 	}{
 		{
-			name:   "basic test",
+			name:   "Generate text file upload",
 			fields: fields{s3Client: s3Client},
 			args: args{
 				key:    aws.String("testfile.txt"),
@@ -56,7 +56,18 @@ func TestUploadService_UploadFile(t *testing.T) {
 				file:   bytes.NewReader([]byte("Hello, World!")),
 			},
 			wantErr: false,
-			want:    fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint),
+			want:    aws.String(fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint)),
+		},
+		{
+			name:   "Generated text file upload in a folder",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				key:    aws.String("testfolder/testfile.txt"),
+				bucket: aws.String("testbucket"),
+				file:   bytes.NewReader([]byte("Hello, World!")),
+			},
+			wantErr: false,
+			want:    aws.String(fmt.Sprintf("%s/testbucket/testfolder/testfile.txt", s3Endpoint)),
 		},
 	}
 
@@ -70,7 +81,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 				t.Errorf("UploadService.UploadFile() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if *got != tt.want {
+			if *got != *tt.want {
 				t.Errorf("UploadService.UploadFile() = %v, want %v", got, tt.want)
 			}
 		})

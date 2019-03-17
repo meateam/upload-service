@@ -5,6 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch test package",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${workspaceFolder}",
+            "env": {
+                "S3_ACCESS_KEY": "F6WUUG27HBUFSIXVZL59",
+                "S3_SECRET_KEY": "BPlIUU6SX0ZxiCMo3tIpCMAUdnmkN9Eo9K42NsRR",
+                "S3_ENDPOINT": "http://127.0.0.1:9000",
+            }
+        },
+        {
             "name": "Launch",
             "type": "go",
             "request": "launch",
