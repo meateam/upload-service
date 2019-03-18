@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
@@ -19,9 +18,9 @@ func TestUploadService_UploadFile(t *testing.T) {
 		s3Client *s3.S3
 	}
 	type args struct {
-		file   io.Reader
-		key    *string
-		bucket *string
+		file     io.Reader
+		key      *string
+		bucket   *string
 		metadata map[string]*string
 	}
 
@@ -52,9 +51,9 @@ func TestUploadService_UploadFile(t *testing.T) {
 			name:   "Media upload text file",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:    aws.String("testfile.txt"),
-				bucket: aws.String("testbucket"),
-				file:   bytes.NewReader([]byte("Hello, World!")),
+				key:      aws.String("testfile.txt"),
+				bucket:   aws.String("testbucket"),
+				file:     bytes.NewReader([]byte("Hello, World!")),
 				metadata: nil,
 			},
 			wantErr: false,
@@ -64,9 +63,9 @@ func TestUploadService_UploadFile(t *testing.T) {
 			name:   "Media upload text file in a folder",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:    aws.String("testfolder/testfile.txt"),
-				bucket: aws.String("testbucket"),
-				file:   bytes.NewReader([]byte("Hello, World!")),
+				key:      aws.String("testfolder/testfile.txt"),
+				bucket:   aws.String("testbucket"),
+				file:     bytes.NewReader([]byte("Hello, World!")),
 				metadata: nil,
 			},
 			wantErr: false,
@@ -76,9 +75,9 @@ func TestUploadService_UploadFile(t *testing.T) {
 			name:   "Media upload text file with empty key",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:    aws.String(""),
-				bucket: aws.String("testbucket"),
-				file:   bytes.NewReader([]byte("Hello, World!")),
+				key:      aws.String(""),
+				bucket:   aws.String("testbucket"),
+				file:     bytes.NewReader([]byte("Hello, World!")),
 				metadata: nil,
 			},
 			wantErr: true,
@@ -87,9 +86,9 @@ func TestUploadService_UploadFile(t *testing.T) {
 			name:   "Media upload text file with empty bucket",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:    aws.String("testfile.txt"),
-				bucket: aws.String(""),
-				file:   bytes.NewReader([]byte("Hello, World!")),
+				key:      aws.String("testfile.txt"),
+				bucket:   aws.String(""),
+				file:     bytes.NewReader([]byte("Hello, World!")),
 				metadata: nil,
 			},
 			wantErr: true,
@@ -98,9 +97,9 @@ func TestUploadService_UploadFile(t *testing.T) {
 			name:   "Media upload text file with nil key",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:    nil,
-				bucket: aws.String("testbucket"),
-				file:   bytes.NewReader([]byte("Hello, World!")),
+				key:      nil,
+				bucket:   aws.String("testbucket"),
+				file:     bytes.NewReader([]byte("Hello, World!")),
 				metadata: nil,
 			},
 			wantErr: true,
@@ -109,9 +108,9 @@ func TestUploadService_UploadFile(t *testing.T) {
 			name:   "Media upload text file with nil bucket",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:    aws.String("testfile.txt"),
-				bucket: nil,
-				file:   bytes.NewReader([]byte("Hello, World!")),
+				key:      aws.String("testfile.txt"),
+				bucket:   nil,
+				file:     bytes.NewReader([]byte("Hello, World!")),
 				metadata: nil,
 			},
 			wantErr: true,
