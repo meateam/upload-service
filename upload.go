@@ -17,8 +17,9 @@ type UploadService struct {
 	s3Client *s3.S3
 }
 
-// UploadFile uploads a file to the given bucket in S3
-func (s UploadService) UploadFile(file io.Reader, key *string, bucket *string) (*string, error) {
+// UploadFile uploads a file to the given bucket in S3.
+// If metadata is a non-nil map then it will be uploaded with the file.
+func (s UploadService) UploadFile(file io.Reader, metadata map[string]*string, key *string, bucket *string) (*string, error) {
 	if key == nil || *key == "" {
 		return nil, fmt.Errorf("key is required")
 	}
@@ -46,12 +47,18 @@ func (s UploadService) UploadFile(file io.Reader, key *string, bucket *string) (
 		u.PartSize = 32 * 1024 * 1024 // 32MB per part
 	})
 
-	// Upload a new object with the file's data to the user's bucket
-	output, err := uploader.Upload(&s3manager.UploadInput{
+	input := &s3manager.UploadInput{
 		Bucket: bucket,
 		Key:    key,
 		Body:   file,
-	})
+	}
+
+	if metadata != nil {
+		input.Metadata = metadata
+	}
+
+	// Upload a new object with the file's data to the user's bucket
+	output, err := uploader.Upload(input)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to upload data to %s/%s: %v", *bucket, *key, err)
@@ -65,17 +72,17 @@ type UploadHandler struct {
 	UploadService
 }
 
-// Upload is the request handler for file uploads, it is responsible for getting the file
+// UploadMedia is the request handler for file uploads, it is responsible for getting the file
 // from the request's body and uploading it to the bucket of the user who uploaded it
-func (h UploadHandler) Upload(ctx context.Context, request *pb.UploadRequest) (*pb.UploadResponse, error) {
+func (h UploadHandler) UploadMedia(ctx context.Context, request *pb.UploadMediaRequest) (*pb.UploadMediaResponse, error) {
 	bucket := aws.String(request.Bucket)
 	key := aws.String(request.Key)
 	file := bytes.NewReader(request.File)
-	output, err := h.UploadFile(file, key, bucket)
+	output, err := h.UploadFile(file, nil, key, bucket)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.UploadResponse{Output: *output}, nil
+	return &pb.UploadMediaResponse{Output: *output}, nil
 }

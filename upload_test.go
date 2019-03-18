@@ -22,6 +22,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 		file   io.Reader
 		key    *string
 		bucket *string
+		metadata map[string]*string
 	}
 
 	s3AccessKey := os.Getenv("S3_ACCESS_KEY")
@@ -48,64 +49,70 @@ func TestUploadService_UploadFile(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:   "Generate text file upload",
+			name:   "Media upload text file",
 			fields: fields{s3Client: s3Client},
 			args: args{
 				key:    aws.String("testfile.txt"),
 				bucket: aws.String("testbucket"),
 				file:   bytes.NewReader([]byte("Hello, World!")),
+				metadata: nil,
 			},
 			wantErr: false,
 			want:    aws.String(fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint)),
 		},
 		{
-			name:   "Generated text file upload in a folder",
+			name:   "Media upload text file in a folder",
 			fields: fields{s3Client: s3Client},
 			args: args{
 				key:    aws.String("testfolder/testfile.txt"),
 				bucket: aws.String("testbucket"),
 				file:   bytes.NewReader([]byte("Hello, World!")),
+				metadata: nil,
 			},
 			wantErr: false,
 			want:    aws.String(fmt.Sprintf("%s/testbucket/testfolder/testfile.txt", s3Endpoint)),
 		},
 		{
-			name:   "Upload file with empty key",
+			name:   "Media upload text file with empty key",
 			fields: fields{s3Client: s3Client},
 			args: args{
 				key:    aws.String(""),
 				bucket: aws.String("testbucket"),
 				file:   bytes.NewReader([]byte("Hello, World!")),
+				metadata: nil,
 			},
 			wantErr: true,
 		},
 		{
-			name:   "Upload file with empty bucket",
+			name:   "Media upload text file with empty bucket",
 			fields: fields{s3Client: s3Client},
 			args: args{
 				key:    aws.String("testfile.txt"),
 				bucket: aws.String(""),
 				file:   bytes.NewReader([]byte("Hello, World!")),
+				metadata: nil,
 			},
 			wantErr: true,
 		},
 		{
-			name:   "Upload file with nil key",
+			name:   "Media upload text file with nil key",
 			fields: fields{s3Client: s3Client},
 			args: args{
 				key:    nil,
 				bucket: aws.String("testbucket"),
 				file:   bytes.NewReader([]byte("Hello, World!")),
+				metadata: nil,
 			},
 			wantErr: true,
 		},
 		{
-			name:   "Upload file with nil bucket",
+			name:   "Media upload text file with nil bucket",
 			fields: fields{s3Client: s3Client},
 			args: args{
 				key:    aws.String("testfile.txt"),
 				bucket: nil,
 				file:   bytes.NewReader([]byte("Hello, World!")),
+				metadata: nil,
 			},
 			wantErr: true,
 		},
@@ -117,7 +124,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 				s3Client: tt.fields.s3Client,
 			}
 
-			got, err := s.UploadFile(tt.args.file, tt.args.key, tt.args.bucket)
+			got, err := s.UploadFile(tt.args.file, tt.args.metadata, tt.args.key, tt.args.bucket)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UploadService.UploadFile() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -23,11 +23,11 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
-// UploadRequest is the request for Upload.
-type UploadRequest struct {
+// UploadMediaRequest is the request for Upload.
+type UploadMediaRequest struct {
 	// File is the file to upload.
 	File []byte `protobuf:"bytes,1,opt,name=file,proto3" json:"file,omitempty"`
-	// File key to store in S3
+	// File key to store in S3.
 	Key string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 	// The bucket we want to upload the file to.
 	Bucket               string   `protobuf:"bytes,3,opt,name=bucket,proto3" json:"bucket,omitempty"`
@@ -36,53 +36,53 @@ type UploadRequest struct {
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *UploadRequest) Reset()         { *m = UploadRequest{} }
-func (m *UploadRequest) String() string { return proto.CompactTextString(m) }
-func (*UploadRequest) ProtoMessage()    {}
-func (*UploadRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_3354fad3bdaedc7d, []int{0}
+func (m *UploadMediaRequest) Reset()         { *m = UploadMediaRequest{} }
+func (m *UploadMediaRequest) String() string { return proto.CompactTextString(m) }
+func (*UploadMediaRequest) ProtoMessage()    {}
+func (*UploadMediaRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_upload_service_7d9500c60a7882d8, []int{0}
 }
-func (m *UploadRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_UploadRequest.Unmarshal(m, b)
+func (m *UploadMediaRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UploadMediaRequest.Unmarshal(m, b)
 }
-func (m *UploadRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_UploadRequest.Marshal(b, m, deterministic)
+func (m *UploadMediaRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UploadMediaRequest.Marshal(b, m, deterministic)
 }
-func (dst *UploadRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UploadRequest.Merge(dst, src)
+func (dst *UploadMediaRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UploadMediaRequest.Merge(dst, src)
 }
-func (m *UploadRequest) XXX_Size() int {
-	return xxx_messageInfo_UploadRequest.Size(m)
+func (m *UploadMediaRequest) XXX_Size() int {
+	return xxx_messageInfo_UploadMediaRequest.Size(m)
 }
-func (m *UploadRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_UploadRequest.DiscardUnknown(m)
+func (m *UploadMediaRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UploadMediaRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_UploadRequest proto.InternalMessageInfo
+var xxx_messageInfo_UploadMediaRequest proto.InternalMessageInfo
 
-func (m *UploadRequest) GetFile() []byte {
+func (m *UploadMediaRequest) GetFile() []byte {
 	if m != nil {
 		return m.File
 	}
 	return nil
 }
 
-func (m *UploadRequest) GetKey() string {
+func (m *UploadMediaRequest) GetKey() string {
 	if m != nil {
 		return m.Key
 	}
 	return ""
 }
 
-func (m *UploadRequest) GetBucket() string {
+func (m *UploadMediaRequest) GetBucket() string {
 	if m != nil {
 		return m.Bucket
 	}
 	return ""
 }
 
-// UploadResponse is the response for Upload.
-type UploadResponse struct {
+// UploadMediaResponse is the response for Upload.
+type UploadMediaResponse struct {
 	// The location that the file uploaded to.
 	Output               string   `protobuf:"bytes,1,opt,name=output,proto3" json:"output,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -90,31 +90,31 @@ type UploadResponse struct {
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *UploadResponse) Reset()         { *m = UploadResponse{} }
-func (m *UploadResponse) String() string { return proto.CompactTextString(m) }
-func (*UploadResponse) ProtoMessage()    {}
-func (*UploadResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_3354fad3bdaedc7d, []int{1}
+func (m *UploadMediaResponse) Reset()         { *m = UploadMediaResponse{} }
+func (m *UploadMediaResponse) String() string { return proto.CompactTextString(m) }
+func (*UploadMediaResponse) ProtoMessage()    {}
+func (*UploadMediaResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_upload_service_7d9500c60a7882d8, []int{1}
 }
-func (m *UploadResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_UploadResponse.Unmarshal(m, b)
+func (m *UploadMediaResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UploadMediaResponse.Unmarshal(m, b)
 }
-func (m *UploadResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_UploadResponse.Marshal(b, m, deterministic)
+func (m *UploadMediaResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UploadMediaResponse.Marshal(b, m, deterministic)
 }
-func (dst *UploadResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UploadResponse.Merge(dst, src)
+func (dst *UploadMediaResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UploadMediaResponse.Merge(dst, src)
 }
-func (m *UploadResponse) XXX_Size() int {
-	return xxx_messageInfo_UploadResponse.Size(m)
+func (m *UploadMediaResponse) XXX_Size() int {
+	return xxx_messageInfo_UploadMediaResponse.Size(m)
 }
-func (m *UploadResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_UploadResponse.DiscardUnknown(m)
+func (m *UploadMediaResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_UploadMediaResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_UploadResponse proto.InternalMessageInfo
+var xxx_messageInfo_UploadMediaResponse proto.InternalMessageInfo
 
-func (m *UploadResponse) GetOutput() string {
+func (m *UploadMediaResponse) GetOutput() string {
 	if m != nil {
 		return m.Output
 	}
@@ -122,8 +122,8 @@ func (m *UploadResponse) GetOutput() string {
 }
 
 func init() {
-	proto.RegisterType((*UploadRequest)(nil), "upload.UploadRequest")
-	proto.RegisterType((*UploadResponse)(nil), "upload.UploadResponse")
+	proto.RegisterType((*UploadMediaRequest)(nil), "upload.UploadMediaRequest")
+	proto.RegisterType((*UploadMediaResponse)(nil), "upload.UploadMediaResponse")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -143,7 +143,7 @@ type UploadClient interface {
 	// Returns the Location of the file as output.
 	//
 	// In case of an error the error is returned.
-	Upload(ctx context.Context, in *UploadRequest, opts ...grpc.CallOption) (*UploadResponse, error)
+	UploadMedia(ctx context.Context, in *UploadMediaRequest, opts ...grpc.CallOption) (*UploadMediaResponse, error)
 }
 
 type uploadClient struct {
@@ -154,9 +154,9 @@ func NewUploadClient(cc *grpc.ClientConn) UploadClient {
 	return &uploadClient{cc}
 }
 
-func (c *uploadClient) Upload(ctx context.Context, in *UploadRequest, opts ...grpc.CallOption) (*UploadResponse, error) {
-	out := new(UploadResponse)
-	err := c.cc.Invoke(ctx, "/upload.Upload/Upload", in, out, opts...)
+func (c *uploadClient) UploadMedia(ctx context.Context, in *UploadMediaRequest, opts ...grpc.CallOption) (*UploadMediaResponse, error) {
+	out := new(UploadMediaResponse)
+	err := c.cc.Invoke(ctx, "/upload.Upload/UploadMedia", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -170,27 +170,27 @@ type UploadServer interface {
 	// Returns the Location of the file as output.
 	//
 	// In case of an error the error is returned.
-	Upload(context.Context, *UploadRequest) (*UploadResponse, error)
+	UploadMedia(context.Context, *UploadMediaRequest) (*UploadMediaResponse, error)
 }
 
 func RegisterUploadServer(s *grpc.Server, srv UploadServer) {
 	s.RegisterService(&_Upload_serviceDesc, srv)
 }
 
-func _Upload_Upload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UploadRequest)
+func _Upload_UploadMedia_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadMediaRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UploadServer).Upload(ctx, in)
+		return srv.(UploadServer).UploadMedia(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/upload.Upload/Upload",
+		FullMethod: "/upload.Upload/UploadMedia",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UploadServer).Upload(ctx, req.(*UploadRequest))
+		return srv.(UploadServer).UploadMedia(ctx, req.(*UploadMediaRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -200,8 +200,8 @@ var _Upload_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*UploadServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Upload",
-			Handler:    _Upload_Upload_Handler,
+			MethodName: "UploadMedia",
+			Handler:    _Upload_UploadMedia_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -209,20 +209,20 @@ var _Upload_serviceDesc = grpc.ServiceDesc{
 }
 
 func init() {
-	proto.RegisterFile("upload_service.proto", fileDescriptor_upload_service_3354fad3bdaedc7d)
+	proto.RegisterFile("upload_service.proto", fileDescriptor_upload_service_7d9500c60a7882d8)
 }
 
-var fileDescriptor_upload_service_3354fad3bdaedc7d = []byte{
-	// 167 bytes of a gzipped FileDescriptorProto
+var fileDescriptor_upload_service_7d9500c60a7882d8 = []byte{
+	// 176 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xe2, 0x12, 0x29, 0x2d, 0xc8, 0xc9,
 	0x4f, 0x4c, 0x89, 0x2f, 0x4e, 0x2d, 0x2a, 0xcb, 0x4c, 0x4e, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9,
-	0x17, 0x62, 0x83, 0x88, 0x2a, 0xf9, 0x72, 0xf1, 0x86, 0x82, 0x59, 0x41, 0xa9, 0x85, 0xa5, 0xa9,
-	0xc5, 0x25, 0x42, 0x42, 0x5c, 0x2c, 0x69, 0x99, 0x39, 0xa9, 0x12, 0x8c, 0x0a, 0x8c, 0x1a, 0x3c,
-	0x41, 0x60, 0xb6, 0x90, 0x00, 0x17, 0x73, 0x76, 0x6a, 0xa5, 0x04, 0x13, 0x50, 0x88, 0x33, 0x08,
-	0xc4, 0x14, 0x12, 0xe3, 0x62, 0x4b, 0x2a, 0x4d, 0xce, 0x4e, 0x2d, 0x91, 0x60, 0x06, 0x0b, 0x42,
-	0x79, 0x4a, 0x1a, 0x5c, 0x7c, 0x30, 0xe3, 0x8a, 0x0b, 0xf2, 0xf3, 0x8a, 0x53, 0x41, 0x2a, 0xf3,
-	0x4b, 0x4b, 0x0a, 0x4a, 0x4b, 0xc0, 0x26, 0x02, 0x55, 0x42, 0x78, 0x46, 0xce, 0x5c, 0x6c, 0x10,
-	0x95, 0x42, 0x96, 0x70, 0x96, 0xa8, 0x1e, 0xc4, 0x55, 0x7a, 0x28, 0x4e, 0x92, 0x12, 0x43, 0x17,
-	0x86, 0x18, 0xad, 0xc4, 0x90, 0xc4, 0x06, 0xf6, 0x8c, 0x31, 0x20, 0x00, 0x00, 0xff, 0xff, 0x68,
-	0x2a, 0x6c, 0xfa, 0xe4, 0x00, 0x00, 0x00,
+	0x17, 0x62, 0x83, 0x88, 0x2a, 0x05, 0x71, 0x09, 0x85, 0x82, 0x59, 0xbe, 0xa9, 0x29, 0x99, 0x89,
+	0x41, 0xa9, 0x85, 0xa5, 0xa9, 0xc5, 0x25, 0x42, 0x42, 0x5c, 0x2c, 0x69, 0x99, 0x39, 0xa9, 0x12,
+	0x8c, 0x0a, 0x8c, 0x1a, 0x3c, 0x41, 0x60, 0xb6, 0x90, 0x00, 0x17, 0x73, 0x76, 0x6a, 0xa5, 0x04,
+	0x13, 0x50, 0x88, 0x33, 0x08, 0xc4, 0x14, 0x12, 0xe3, 0x62, 0x4b, 0x2a, 0x4d, 0xce, 0x4e, 0x2d,
+	0x91, 0x60, 0x06, 0x0b, 0x42, 0x79, 0x4a, 0xba, 0x5c, 0xc2, 0x28, 0x66, 0x16, 0x17, 0xe4, 0xe7,
+	0x15, 0xa7, 0x82, 0x94, 0xe7, 0x97, 0x96, 0x14, 0x94, 0x96, 0x80, 0x8d, 0x05, 0x2a, 0x87, 0xf0,
+	0x8c, 0x82, 0xb8, 0xd8, 0x20, 0xca, 0x85, 0x3c, 0xb8, 0xb8, 0x91, 0x34, 0x0a, 0x49, 0xe9, 0x41,
+	0x1c, 0xa9, 0x87, 0xe9, 0x42, 0x29, 0x69, 0xac, 0x72, 0x10, 0x9b, 0x94, 0x18, 0x92, 0xd8, 0xc0,
+	0xbe, 0x34, 0x06, 0x04, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0x06, 0xa7, 0xfd, 0x00, 0x00, 0x00,
 }

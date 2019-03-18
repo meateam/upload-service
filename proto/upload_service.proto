@@ -9,23 +9,23 @@ service Upload {
     // Returns the Location of the file as output.
     //
     // In case of an error the error is returned.
-    rpc Upload(UploadRequest) returns (UploadResponse) {}
+    rpc UploadMedia(UploadMediaRequest) returns (UploadMediaResponse) {}
 }
 
-// UploadRequest is the request for Upload.
-message UploadRequest {
+// UploadMediaRequest is the request for Upload.
+message UploadMediaRequest {
     // File is the file to upload.
     bytes file = 1;
 
-    // File key to store in S3
+    // File key to store in S3.
     string key = 2;
 
     // The bucket we want to upload the file to.
     string bucket = 3;
 }
 
-// UploadResponse is the response for Upload.
-message UploadResponse {
+// UploadMediaResponse is the response for Upload.
+message UploadMediaResponse {
     // The location that the file uploaded to.
     string output = 1;
 }
