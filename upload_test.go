@@ -180,6 +180,48 @@ func TestUploadHandler_UploadMedia(t *testing.T) {
 				Output: fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint),
 			},
 		},
+		{
+			name:   "UploadMedia - text file - without key",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadMediaRequest{
+					Key:    "",
+					Bucket: "testbucket",
+					File:   []byte("Hello, World!"),
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name:   "UploadMedia - text file - without bucket",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadMediaRequest{
+					Key:    "testfile.txt",
+					Bucket: "",
+					File:   []byte("Hello, World!"),
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name:   "UploadMedia - text file - with nil file",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadMediaRequest{
+					Key:    "testfile.txt",
+					Bucket: "testbucket",
+					File:   nil,
+				},
+			},
+			wantErr: false,
+			want: &pb.UploadMediaResponse{
+				Output: fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint),
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
