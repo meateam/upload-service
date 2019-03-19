@@ -36,7 +36,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	grpcServer := grpc.NewServer(grpc.MaxRecvMsgSize(10000000))
+	grpcServer := grpc.NewServer(grpc.MaxRecvMsgSize((1 << 20) * 10))
 	server := &UploadHandler{UploadService: UploadService{s3Client: s3Client}}
 	pb.RegisterUploadServer(grpcServer, server)
 	grpcServer.Serve(lis)
