@@ -139,7 +139,7 @@ func (h UploadHandler) UploadMultipart(ctx context.Context, request *pb.UploadMu
 	key := aws.String(request.Key)
 	file := bytes.NewReader(request.File)
 	metadata := make(map[string]*string)
-	
+
 	for k, v := range request.Metadata {
 		metadata[k] = aws.String(v)
 	}
@@ -151,4 +151,14 @@ func (h UploadHandler) UploadMultipart(ctx context.Context, request *pb.UploadMu
 	}
 
 	return &pb.UploadMultipartResponse{Output: *output}, nil
+}
+
+// UploadResumableInit ...
+func (h UploadHandler) UploadResumableInit(context.Context, *pb.UploadResumableInitRequest) (*pb.UploadResumableInitResponse, error) {
+	return &pb.UploadResumableInitResponse{UploadId: ""}, nil
+}
+
+// UploadResumablePart ...
+func (h UploadHandler) UploadResumablePart(context.Context, *pb.UploadResumablePartRequest) (*pb.UploadResumablePartResponse, error) {
+	return &pb.UploadResumablePartResponse{Etag: ""}, nil
 }

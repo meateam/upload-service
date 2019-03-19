@@ -11,9 +11,11 @@ service Upload {
     // In case of an error the error is returned.
     rpc UploadMedia(UploadMediaRequest) returns (UploadMediaResponse) {}
     rpc UploadMultipart(UploadMultipartRequest) returns (UploadMultipartResponse) {}
+    rpc UploadResumableInit(UploadResumableInitRequest) returns (UploadResumableInitResponse) {}
+    rpc UploadResumablePart(UploadResumablePartRequest) returns (UploadResumablePartResponse) {}
 }
 
-// UploadMediaRequest is the request for Upload.
+// UploadMediaRequest is the request for Media Upload.
 message UploadMediaRequest {
     // File is the file to upload.
     bytes file = 1;
@@ -21,16 +23,17 @@ message UploadMediaRequest {
     // File key to store in S3.
     string key = 2;
 
-    // The bucket we want to upload the file to.
+    // The bucket to upload the file to.
     string bucket = 3;
 }
 
-// UploadMediaResponse is the response for Upload.
+// UploadMediaResponse is the response for Media Upload.
 message UploadMediaResponse {
-    // The location that the file uploaded to.
+    // The location that the file was uploaded to.
     string output = 1;
 }
 
+// UploadMultipartRequest is the request for Multipart Upload.
 message UploadMultipartRequest {
     // File to upload.
     bytes file = 1;
@@ -41,12 +44,41 @@ message UploadMultipartRequest {
     // File key to store in S3.
     string key = 3;
 
-    // The bucket we want to upload the file to.
+    // The bucket to upload the file to.
     string bucket = 4;
 }
 
-// UploadMultipartResponse is the response for Upload.
+// UploadMultipartResponse is the response for Multipart Upload.
 message UploadMultipartResponse {
-    // The location that the file uploaded to.
+    // The location that the file was uploaded to.
     string output = 1;
+}
+
+// UploadResumableInitRequest is the request for Initiating Resumable Upload.
+message UploadResumableInitRequest {
+    // File key to store in S3.
+    string key = 1;
+
+    // The bucket to upload the file to.
+    string bucket = 2;
+
+    // File metadata.
+    map<string, string> metadata = 3;
+}
+
+// UploadResumableInitResponse is the response for Initiating Resumable Upload.
+message UploadResumableInitResponse {
+    // Upload ID generated for resumable upload of a file.
+    string uploadId = 1;
+}
+
+// UploadResumablePartRequest is the request for Resumable Part Upload.
+message UploadResumablePartRequest {
+    // File part chunk.
+    bytes part = 1;
+}
+
+// UploadResumablePartResponse is the response for Resumable Part Upload.
+message UploadResumablePartResponse {
+    string etag = 1;
 }
