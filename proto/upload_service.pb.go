@@ -40,7 +40,7 @@ func (m *UploadMediaRequest) Reset()         { *m = UploadMediaRequest{} }
 func (m *UploadMediaRequest) String() string { return proto.CompactTextString(m) }
 func (*UploadMediaRequest) ProtoMessage()    {}
 func (*UploadMediaRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_8d455835afb607d8, []int{0}
+	return fileDescriptor_upload_service_3b4eef93eea338f0, []int{0}
 }
 func (m *UploadMediaRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadMediaRequest.Unmarshal(m, b)
@@ -94,7 +94,7 @@ func (m *UploadMediaResponse) Reset()         { *m = UploadMediaResponse{} }
 func (m *UploadMediaResponse) String() string { return proto.CompactTextString(m) }
 func (*UploadMediaResponse) ProtoMessage()    {}
 func (*UploadMediaResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_8d455835afb607d8, []int{1}
+	return fileDescriptor_upload_service_3b4eef93eea338f0, []int{1}
 }
 func (m *UploadMediaResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadMediaResponse.Unmarshal(m, b)
@@ -140,7 +140,7 @@ func (m *UploadMultipartRequest) Reset()         { *m = UploadMultipartRequest{}
 func (m *UploadMultipartRequest) String() string { return proto.CompactTextString(m) }
 func (*UploadMultipartRequest) ProtoMessage()    {}
 func (*UploadMultipartRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_8d455835afb607d8, []int{2}
+	return fileDescriptor_upload_service_3b4eef93eea338f0, []int{2}
 }
 func (m *UploadMultipartRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadMultipartRequest.Unmarshal(m, b)
@@ -201,7 +201,7 @@ func (m *UploadMultipartResponse) Reset()         { *m = UploadMultipartResponse
 func (m *UploadMultipartResponse) String() string { return proto.CompactTextString(m) }
 func (*UploadMultipartResponse) ProtoMessage()    {}
 func (*UploadMultipartResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_8d455835afb607d8, []int{3}
+	return fileDescriptor_upload_service_3b4eef93eea338f0, []int{3}
 }
 func (m *UploadMultipartResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadMultipartResponse.Unmarshal(m, b)
@@ -228,64 +228,6 @@ func (m *UploadMultipartResponse) GetOutput() string {
 	return ""
 }
 
-// UploadResumableInitRequest is the request for Initiating Resumable Upload.
-type UploadResumableInitRequest struct {
-	// File key to store in S3.
-	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
-	// The bucket to upload the file to.
-	Bucket string `protobuf:"bytes,2,opt,name=bucket,proto3" json:"bucket,omitempty"`
-	// File metadata.
-	Metadata             map[string]string `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
-}
-
-func (m *UploadResumableInitRequest) Reset()         { *m = UploadResumableInitRequest{} }
-func (m *UploadResumableInitRequest) String() string { return proto.CompactTextString(m) }
-func (*UploadResumableInitRequest) ProtoMessage()    {}
-func (*UploadResumableInitRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_8d455835afb607d8, []int{4}
-}
-func (m *UploadResumableInitRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_UploadResumableInitRequest.Unmarshal(m, b)
-}
-func (m *UploadResumableInitRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_UploadResumableInitRequest.Marshal(b, m, deterministic)
-}
-func (dst *UploadResumableInitRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UploadResumableInitRequest.Merge(dst, src)
-}
-func (m *UploadResumableInitRequest) XXX_Size() int {
-	return xxx_messageInfo_UploadResumableInitRequest.Size(m)
-}
-func (m *UploadResumableInitRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_UploadResumableInitRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_UploadResumableInitRequest proto.InternalMessageInfo
-
-func (m *UploadResumableInitRequest) GetKey() string {
-	if m != nil {
-		return m.Key
-	}
-	return ""
-}
-
-func (m *UploadResumableInitRequest) GetBucket() string {
-	if m != nil {
-		return m.Bucket
-	}
-	return ""
-}
-
-func (m *UploadResumableInitRequest) GetMetadata() map[string]string {
-	if m != nil {
-		return m.Metadata
-	}
-	return nil
-}
-
 // UploadResumableInitResponse is the response for Initiating Resumable Upload.
 type UploadResumableInitResponse struct {
 	// Upload ID generated for resumable upload of a file.
@@ -299,7 +241,7 @@ func (m *UploadResumableInitResponse) Reset()         { *m = UploadResumableInit
 func (m *UploadResumableInitResponse) String() string { return proto.CompactTextString(m) }
 func (*UploadResumableInitResponse) ProtoMessage()    {}
 func (*UploadResumableInitResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_8d455835afb607d8, []int{5}
+	return fileDescriptor_upload_service_3b4eef93eea338f0, []int{4}
 }
 func (m *UploadResumableInitResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadResumableInitResponse.Unmarshal(m, b)
@@ -326,81 +268,297 @@ func (m *UploadResumableInitResponse) GetUploadId() string {
 	return ""
 }
 
-// UploadResumablePartRequest is the request for Resumable Part Upload.
-type UploadResumablePartRequest struct {
+// UploadResumableRequest is the request for Resumable Part Upload.
+type UploadResumableRequest struct {
+	// Types that are valid to be assigned to Value:
+	//	*UploadResumableRequest_UploadResumableInit_
+	//	*UploadResumableRequest_Part_
+	Value                isUploadResumableRequest_Value `protobuf_oneof:"value"`
+	XXX_NoUnkeyedLiteral struct{}                       `json:"-"`
+	XXX_unrecognized     []byte                         `json:"-"`
+	XXX_sizecache        int32                          `json:"-"`
+}
+
+func (m *UploadResumableRequest) Reset()         { *m = UploadResumableRequest{} }
+func (m *UploadResumableRequest) String() string { return proto.CompactTextString(m) }
+func (*UploadResumableRequest) ProtoMessage()    {}
+func (*UploadResumableRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_upload_service_3b4eef93eea338f0, []int{5}
+}
+func (m *UploadResumableRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UploadResumableRequest.Unmarshal(m, b)
+}
+func (m *UploadResumableRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UploadResumableRequest.Marshal(b, m, deterministic)
+}
+func (dst *UploadResumableRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UploadResumableRequest.Merge(dst, src)
+}
+func (m *UploadResumableRequest) XXX_Size() int {
+	return xxx_messageInfo_UploadResumableRequest.Size(m)
+}
+func (m *UploadResumableRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UploadResumableRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UploadResumableRequest proto.InternalMessageInfo
+
+type isUploadResumableRequest_Value interface {
+	isUploadResumableRequest_Value()
+}
+
+type UploadResumableRequest_UploadResumableInit_ struct {
+	UploadResumableInit *UploadResumableRequest_UploadResumableInit `protobuf:"bytes,1,opt,name=uploadResumableInit,proto3,oneof"`
+}
+type UploadResumableRequest_Part_ struct {
+	Part *UploadResumableRequest_Part `protobuf:"bytes,2,opt,name=part,proto3,oneof"`
+}
+
+func (*UploadResumableRequest_UploadResumableInit_) isUploadResumableRequest_Value() {}
+func (*UploadResumableRequest_Part_) isUploadResumableRequest_Value()                {}
+
+func (m *UploadResumableRequest) GetValue() isUploadResumableRequest_Value {
+	if m != nil {
+		return m.Value
+	}
+	return nil
+}
+
+func (m *UploadResumableRequest) GetUploadResumableInit() *UploadResumableRequest_UploadResumableInit {
+	if x, ok := m.GetValue().(*UploadResumableRequest_UploadResumableInit_); ok {
+		return x.UploadResumableInit
+	}
+	return nil
+}
+
+func (m *UploadResumableRequest) GetPart() *UploadResumableRequest_Part {
+	if x, ok := m.GetValue().(*UploadResumableRequest_Part_); ok {
+		return x.Part
+	}
+	return nil
+}
+
+// XXX_OneofFuncs is for the internal use of the proto package.
+func (*UploadResumableRequest) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
+	return _UploadResumableRequest_OneofMarshaler, _UploadResumableRequest_OneofUnmarshaler, _UploadResumableRequest_OneofSizer, []interface{}{
+		(*UploadResumableRequest_UploadResumableInit_)(nil),
+		(*UploadResumableRequest_Part_)(nil),
+	}
+}
+
+func _UploadResumableRequest_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
+	m := msg.(*UploadResumableRequest)
+	// value
+	switch x := m.Value.(type) {
+	case *UploadResumableRequest_UploadResumableInit_:
+		b.EncodeVarint(1<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.UploadResumableInit); err != nil {
+			return err
+		}
+	case *UploadResumableRequest_Part_:
+		b.EncodeVarint(2<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.Part); err != nil {
+			return err
+		}
+	case nil:
+	default:
+		return fmt.Errorf("UploadResumableRequest.Value has unexpected type %T", x)
+	}
+	return nil
+}
+
+func _UploadResumableRequest_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
+	m := msg.(*UploadResumableRequest)
+	switch tag {
+	case 1: // value.uploadResumableInit
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(UploadResumableRequest_UploadResumableInit)
+		err := b.DecodeMessage(msg)
+		m.Value = &UploadResumableRequest_UploadResumableInit_{msg}
+		return true, err
+	case 2: // value.part
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(UploadResumableRequest_Part)
+		err := b.DecodeMessage(msg)
+		m.Value = &UploadResumableRequest_Part_{msg}
+		return true, err
+	default:
+		return false, nil
+	}
+}
+
+func _UploadResumableRequest_OneofSizer(msg proto.Message) (n int) {
+	m := msg.(*UploadResumableRequest)
+	// value
+	switch x := m.Value.(type) {
+	case *UploadResumableRequest_UploadResumableInit_:
+		s := proto.Size(x.UploadResumableInit)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *UploadResumableRequest_Part_:
+		s := proto.Size(x.Part)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case nil:
+	default:
+		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
+	}
+	return n
+}
+
+// UploadResumableInit is the data for Initiating Resumable Upload.
+type UploadResumableRequest_UploadResumableInit struct {
+	// File key to store in S3.
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	// The bucket to upload the file to.
+	Bucket string `protobuf:"bytes,2,opt,name=bucket,proto3" json:"bucket,omitempty"`
+	// File metadata.
+	Metadata             map[string]string `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *UploadResumableRequest_UploadResumableInit) Reset() {
+	*m = UploadResumableRequest_UploadResumableInit{}
+}
+func (m *UploadResumableRequest_UploadResumableInit) String() string {
+	return proto.CompactTextString(m)
+}
+func (*UploadResumableRequest_UploadResumableInit) ProtoMessage() {}
+func (*UploadResumableRequest_UploadResumableInit) Descriptor() ([]byte, []int) {
+	return fileDescriptor_upload_service_3b4eef93eea338f0, []int{5, 0}
+}
+func (m *UploadResumableRequest_UploadResumableInit) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UploadResumableRequest_UploadResumableInit.Unmarshal(m, b)
+}
+func (m *UploadResumableRequest_UploadResumableInit) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UploadResumableRequest_UploadResumableInit.Marshal(b, m, deterministic)
+}
+func (dst *UploadResumableRequest_UploadResumableInit) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UploadResumableRequest_UploadResumableInit.Merge(dst, src)
+}
+func (m *UploadResumableRequest_UploadResumableInit) XXX_Size() int {
+	return xxx_messageInfo_UploadResumableRequest_UploadResumableInit.Size(m)
+}
+func (m *UploadResumableRequest_UploadResumableInit) XXX_DiscardUnknown() {
+	xxx_messageInfo_UploadResumableRequest_UploadResumableInit.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UploadResumableRequest_UploadResumableInit proto.InternalMessageInfo
+
+func (m *UploadResumableRequest_UploadResumableInit) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *UploadResumableRequest_UploadResumableInit) GetBucket() string {
+	if m != nil {
+		return m.Bucket
+	}
+	return ""
+}
+
+func (m *UploadResumableRequest_UploadResumableInit) GetMetadata() map[string]string {
+	if m != nil {
+		return m.Metadata
+	}
+	return nil
+}
+
+// Part is the current part to upload.
+type UploadResumableRequest_Part struct {
 	// File part chunk.
-	Part                 []byte   `protobuf:"bytes,1,opt,name=part,proto3" json:"part,omitempty"`
+	Part []byte `protobuf:"bytes,1,opt,name=part,proto3" json:"part,omitempty"`
+	// Part number.
+	PartNumber           int64    `protobuf:"varint,2,opt,name=partNumber,proto3" json:"partNumber,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *UploadResumablePartRequest) Reset()         { *m = UploadResumablePartRequest{} }
-func (m *UploadResumablePartRequest) String() string { return proto.CompactTextString(m) }
-func (*UploadResumablePartRequest) ProtoMessage()    {}
-func (*UploadResumablePartRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_8d455835afb607d8, []int{6}
+func (m *UploadResumableRequest_Part) Reset()         { *m = UploadResumableRequest_Part{} }
+func (m *UploadResumableRequest_Part) String() string { return proto.CompactTextString(m) }
+func (*UploadResumableRequest_Part) ProtoMessage()    {}
+func (*UploadResumableRequest_Part) Descriptor() ([]byte, []int) {
+	return fileDescriptor_upload_service_3b4eef93eea338f0, []int{5, 1}
 }
-func (m *UploadResumablePartRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_UploadResumablePartRequest.Unmarshal(m, b)
+func (m *UploadResumableRequest_Part) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UploadResumableRequest_Part.Unmarshal(m, b)
 }
-func (m *UploadResumablePartRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_UploadResumablePartRequest.Marshal(b, m, deterministic)
+func (m *UploadResumableRequest_Part) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UploadResumableRequest_Part.Marshal(b, m, deterministic)
 }
-func (dst *UploadResumablePartRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UploadResumablePartRequest.Merge(dst, src)
+func (dst *UploadResumableRequest_Part) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UploadResumableRequest_Part.Merge(dst, src)
 }
-func (m *UploadResumablePartRequest) XXX_Size() int {
-	return xxx_messageInfo_UploadResumablePartRequest.Size(m)
+func (m *UploadResumableRequest_Part) XXX_Size() int {
+	return xxx_messageInfo_UploadResumableRequest_Part.Size(m)
 }
-func (m *UploadResumablePartRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_UploadResumablePartRequest.DiscardUnknown(m)
+func (m *UploadResumableRequest_Part) XXX_DiscardUnknown() {
+	xxx_messageInfo_UploadResumableRequest_Part.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_UploadResumablePartRequest proto.InternalMessageInfo
+var xxx_messageInfo_UploadResumableRequest_Part proto.InternalMessageInfo
 
-func (m *UploadResumablePartRequest) GetPart() []byte {
+func (m *UploadResumableRequest_Part) GetPart() []byte {
 	if m != nil {
 		return m.Part
 	}
 	return nil
 }
 
-// UploadResumablePartResponse is the response for Resumable Part Upload.
-type UploadResumablePartResponse struct {
-	Etag                 string   `protobuf:"bytes,1,opt,name=etag,proto3" json:"etag,omitempty"`
+func (m *UploadResumableRequest_Part) GetPartNumber() int64 {
+	if m != nil {
+		return m.PartNumber
+	}
+	return 0
+}
+
+// UploadResumableResponse is the response for Resumable Part Upload.
+type UploadResumableResponse struct {
+	// The location that the file was uploaded to.
+	Output               string   `protobuf:"bytes,1,opt,name=output,proto3" json:"output,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *UploadResumablePartResponse) Reset()         { *m = UploadResumablePartResponse{} }
-func (m *UploadResumablePartResponse) String() string { return proto.CompactTextString(m) }
-func (*UploadResumablePartResponse) ProtoMessage()    {}
-func (*UploadResumablePartResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_8d455835afb607d8, []int{7}
+func (m *UploadResumableResponse) Reset()         { *m = UploadResumableResponse{} }
+func (m *UploadResumableResponse) String() string { return proto.CompactTextString(m) }
+func (*UploadResumableResponse) ProtoMessage()    {}
+func (*UploadResumableResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_upload_service_3b4eef93eea338f0, []int{6}
 }
-func (m *UploadResumablePartResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_UploadResumablePartResponse.Unmarshal(m, b)
+func (m *UploadResumableResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UploadResumableResponse.Unmarshal(m, b)
 }
-func (m *UploadResumablePartResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_UploadResumablePartResponse.Marshal(b, m, deterministic)
+func (m *UploadResumableResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UploadResumableResponse.Marshal(b, m, deterministic)
 }
-func (dst *UploadResumablePartResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UploadResumablePartResponse.Merge(dst, src)
+func (dst *UploadResumableResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UploadResumableResponse.Merge(dst, src)
 }
-func (m *UploadResumablePartResponse) XXX_Size() int {
-	return xxx_messageInfo_UploadResumablePartResponse.Size(m)
+func (m *UploadResumableResponse) XXX_Size() int {
+	return xxx_messageInfo_UploadResumableResponse.Size(m)
 }
-func (m *UploadResumablePartResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_UploadResumablePartResponse.DiscardUnknown(m)
+func (m *UploadResumableResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_UploadResumableResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_UploadResumablePartResponse proto.InternalMessageInfo
+var xxx_messageInfo_UploadResumableResponse proto.InternalMessageInfo
 
-func (m *UploadResumablePartResponse) GetEtag() string {
+func (m *UploadResumableResponse) GetOutput() string {
 	if m != nil {
-		return m.Etag
+		return m.Output
 	}
 	return ""
 }
@@ -411,11 +569,12 @@ func init() {
 	proto.RegisterType((*UploadMultipartRequest)(nil), "upload.UploadMultipartRequest")
 	proto.RegisterMapType((map[string]string)(nil), "upload.UploadMultipartRequest.MetadataEntry")
 	proto.RegisterType((*UploadMultipartResponse)(nil), "upload.UploadMultipartResponse")
-	proto.RegisterType((*UploadResumableInitRequest)(nil), "upload.UploadResumableInitRequest")
-	proto.RegisterMapType((map[string]string)(nil), "upload.UploadResumableInitRequest.MetadataEntry")
 	proto.RegisterType((*UploadResumableInitResponse)(nil), "upload.UploadResumableInitResponse")
-	proto.RegisterType((*UploadResumablePartRequest)(nil), "upload.UploadResumablePartRequest")
-	proto.RegisterType((*UploadResumablePartResponse)(nil), "upload.UploadResumablePartResponse")
+	proto.RegisterType((*UploadResumableRequest)(nil), "upload.UploadResumableRequest")
+	proto.RegisterType((*UploadResumableRequest_UploadResumableInit)(nil), "upload.UploadResumableRequest.UploadResumableInit")
+	proto.RegisterMapType((map[string]string)(nil), "upload.UploadResumableRequest.UploadResumableInit.MetadataEntry")
+	proto.RegisterType((*UploadResumableRequest_Part)(nil), "upload.UploadResumableRequest.Part")
+	proto.RegisterType((*UploadResumableResponse)(nil), "upload.UploadResumableResponse")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -437,8 +596,7 @@ type UploadClient interface {
 	// In case of an error the error is returned.
 	UploadMedia(ctx context.Context, in *UploadMediaRequest, opts ...grpc.CallOption) (*UploadMediaResponse, error)
 	UploadMultipart(ctx context.Context, in *UploadMultipartRequest, opts ...grpc.CallOption) (*UploadMultipartResponse, error)
-	UploadResumableInit(ctx context.Context, in *UploadResumableInitRequest, opts ...grpc.CallOption) (*UploadResumableInitResponse, error)
-	UploadResumablePart(ctx context.Context, in *UploadResumablePartRequest, opts ...grpc.CallOption) (*UploadResumablePartResponse, error)
+	UploadResumable(ctx context.Context, opts ...grpc.CallOption) (Upload_UploadResumableClient, error)
 }
 
 type uploadClient struct {
@@ -467,22 +625,38 @@ func (c *uploadClient) UploadMultipart(ctx context.Context, in *UploadMultipartR
 	return out, nil
 }
 
-func (c *uploadClient) UploadResumableInit(ctx context.Context, in *UploadResumableInitRequest, opts ...grpc.CallOption) (*UploadResumableInitResponse, error) {
-	out := new(UploadResumableInitResponse)
-	err := c.cc.Invoke(ctx, "/upload.Upload/UploadResumableInit", in, out, opts...)
+func (c *uploadClient) UploadResumable(ctx context.Context, opts ...grpc.CallOption) (Upload_UploadResumableClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Upload_serviceDesc.Streams[0], "/upload.Upload/UploadResumable", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &uploadUploadResumableClient{stream}
+	return x, nil
 }
 
-func (c *uploadClient) UploadResumablePart(ctx context.Context, in *UploadResumablePartRequest, opts ...grpc.CallOption) (*UploadResumablePartResponse, error) {
-	out := new(UploadResumablePartResponse)
-	err := c.cc.Invoke(ctx, "/upload.Upload/UploadResumablePart", in, out, opts...)
-	if err != nil {
+type Upload_UploadResumableClient interface {
+	Send(*UploadResumableRequest) error
+	CloseAndRecv() (*UploadResumableResponse, error)
+	grpc.ClientStream
+}
+
+type uploadUploadResumableClient struct {
+	grpc.ClientStream
+}
+
+func (x *uploadUploadResumableClient) Send(m *UploadResumableRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *uploadUploadResumableClient) CloseAndRecv() (*UploadResumableResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
-	return out, nil
+	m := new(UploadResumableResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // UploadServer is the server API for Upload service.
@@ -494,8 +668,7 @@ type UploadServer interface {
 	// In case of an error the error is returned.
 	UploadMedia(context.Context, *UploadMediaRequest) (*UploadMediaResponse, error)
 	UploadMultipart(context.Context, *UploadMultipartRequest) (*UploadMultipartResponse, error)
-	UploadResumableInit(context.Context, *UploadResumableInitRequest) (*UploadResumableInitResponse, error)
-	UploadResumablePart(context.Context, *UploadResumablePartRequest) (*UploadResumablePartResponse, error)
+	UploadResumable(Upload_UploadResumableServer) error
 }
 
 func RegisterUploadServer(s *grpc.Server, srv UploadServer) {
@@ -538,40 +711,30 @@ func _Upload_UploadMultipart_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Upload_UploadResumableInit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UploadResumableInitRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UploadServer).UploadResumableInit(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/upload.Upload/UploadResumableInit",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UploadServer).UploadResumableInit(ctx, req.(*UploadResumableInitRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+func _Upload_UploadResumable_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(UploadServer).UploadResumable(&uploadUploadResumableServer{stream})
 }
 
-func _Upload_UploadResumablePart_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UploadResumablePartRequest)
-	if err := dec(in); err != nil {
+type Upload_UploadResumableServer interface {
+	SendAndClose(*UploadResumableResponse) error
+	Recv() (*UploadResumableRequest, error)
+	grpc.ServerStream
+}
+
+type uploadUploadResumableServer struct {
+	grpc.ServerStream
+}
+
+func (x *uploadUploadResumableServer) SendAndClose(m *UploadResumableResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *uploadUploadResumableServer) Recv() (*UploadResumableRequest, error) {
+	m := new(UploadResumableRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
-	if interceptor == nil {
-		return srv.(UploadServer).UploadResumablePart(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/upload.Upload/UploadResumablePart",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UploadServer).UploadResumablePart(ctx, req.(*UploadResumablePartRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return m, nil
 }
 
 var _Upload_serviceDesc = grpc.ServiceDesc{
@@ -586,49 +749,50 @@ var _Upload_serviceDesc = grpc.ServiceDesc{
 			MethodName: "UploadMultipart",
 			Handler:    _Upload_UploadMultipart_Handler,
 		},
+	},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "UploadResumableInit",
-			Handler:    _Upload_UploadResumableInit_Handler,
-		},
-		{
-			MethodName: "UploadResumablePart",
-			Handler:    _Upload_UploadResumablePart_Handler,
+			StreamName:    "UploadResumable",
+			Handler:       _Upload_UploadResumable_Handler,
+			ClientStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "upload_service.proto",
 }
 
 func init() {
-	proto.RegisterFile("upload_service.proto", fileDescriptor_upload_service_8d455835afb607d8)
+	proto.RegisterFile("upload_service.proto", fileDescriptor_upload_service_3b4eef93eea338f0)
 }
 
-var fileDescriptor_upload_service_8d455835afb607d8 = []byte{
-	// 415 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xa4, 0x94, 0xcd, 0x6e, 0xa3, 0x30,
-	0x10, 0xc7, 0x17, 0xc8, 0xa2, 0xec, 0x64, 0x57, 0xbb, 0xf2, 0x46, 0x69, 0x44, 0xa4, 0xb6, 0xa2,
-	0x97, 0x1c, 0x5a, 0x94, 0xa6, 0x97, 0x7e, 0x9c, 0x2b, 0x35, 0x52, 0x23, 0x45, 0xa8, 0x3d, 0xb7,
-	0x4e, 0x70, 0x2b, 0x14, 0x12, 0x28, 0xd8, 0x91, 0xf2, 0x98, 0x7d, 0x80, 0xbe, 0x41, 0x1f, 0xa2,
-	0x06, 0x1b, 0x02, 0x09, 0x90, 0x43, 0x6f, 0x33, 0x66, 0x66, 0xfe, 0x33, 0x3f, 0x8f, 0x81, 0x36,
-	0x0b, 0x3c, 0x1f, 0x3b, 0x4f, 0x11, 0x09, 0x57, 0xee, 0x8c, 0x58, 0x41, 0xe8, 0x53, 0x1f, 0xe9,
-	0xe2, 0xd4, 0xb4, 0x01, 0x3d, 0x26, 0xd6, 0x98, 0x38, 0x2e, 0xb6, 0xc9, 0x1b, 0x23, 0x11, 0x45,
-	0x08, 0x1a, 0x2f, 0xae, 0x47, 0xba, 0xca, 0xb1, 0xd2, 0xff, 0x6d, 0x27, 0x36, 0xfa, 0x07, 0xda,
-	0x9c, 0xac, 0xbb, 0x2a, 0x3f, 0xfa, 0x65, 0xc7, 0x26, 0xea, 0x80, 0x3e, 0x65, 0xb3, 0x39, 0xa1,
-	0x5d, 0x2d, 0x39, 0x94, 0x9e, 0x79, 0x06, 0xff, 0x0b, 0x35, 0xa3, 0xc0, 0x5f, 0x46, 0x24, 0x0e,
-	0xf7, 0x19, 0x0d, 0x18, 0x4d, 0xca, 0xf2, 0x70, 0xe1, 0x99, 0x1f, 0x0a, 0x74, 0x64, 0x3c, 0xf3,
-	0xa8, 0x1b, 0xe0, 0x90, 0xd6, 0xf5, 0x71, 0x07, 0xcd, 0x05, 0xa1, 0xd8, 0xc1, 0x14, 0xf3, 0x66,
-	0xb4, 0x7e, 0x6b, 0x78, 0x6a, 0x89, 0x61, 0xac, 0xf2, 0x2a, 0xd6, 0x58, 0x86, 0xdf, 0x2e, 0x69,
-	0xb8, 0xb6, 0xb3, 0xec, 0x74, 0x22, 0xad, 0x6c, 0xa2, 0x46, 0x7e, 0x22, 0xe3, 0x06, 0xfe, 0x14,
-	0x8a, 0xa4, 0xa9, 0xca, 0x26, 0xb5, 0x0d, 0x3f, 0x57, 0xd8, 0x63, 0x44, 0x02, 0x12, 0xce, 0xb5,
-	0x7a, 0xa9, 0x98, 0xe7, 0x70, 0xb0, 0xd3, 0xd8, 0x1e, 0x24, 0xef, 0x0a, 0x18, 0x22, 0x87, 0x87,
-	0xb2, 0x05, 0x9e, 0x7a, 0x64, 0xb4, 0x74, 0x33, 0x2c, 0xbb, 0xea, 0x9b, 0xc6, 0xd5, 0x7c, 0xe3,
-	0xe8, 0x3e, 0x07, 0x4b, 0x4b, 0x60, 0x0d, 0x8a, 0xb0, 0xca, 0xea, 0x57, 0x01, 0xfb, 0x1e, 0x86,
-	0x2b, 0xe8, 0x95, 0x4a, 0x4a, 0x14, 0x06, 0x34, 0x45, 0x63, 0x23, 0x47, 0xd6, 0xcb, 0x7c, 0x73,
-	0xb0, 0x43, 0x63, 0x52, 0x5c, 0x92, 0x18, 0x6a, 0xba, 0x24, 0xb1, 0xcd, 0x99, 0xf7, 0x4a, 0x33,
-	0xa4, 0x18, 0x4f, 0xe1, 0x73, 0xbc, 0x4a, 0xa1, 0xc4, 0x1e, 0x7e, 0xaa, 0xa0, 0x8b, 0x1c, 0xbe,
-	0x62, 0xad, 0xdc, 0x02, 0x23, 0x63, 0x6b, 0xbf, 0x72, 0x2f, 0xc5, 0xe8, 0x95, 0x7e, 0x13, 0x32,
-	0xe6, 0x0f, 0xf4, 0x00, 0x7f, 0xb7, 0xee, 0x1e, 0x1d, 0xd6, 0x6f, 0xab, 0x71, 0x54, 0xf9, 0x3d,
-	0xab, 0xfa, 0x9c, 0x3e, 0xb0, 0x02, 0x4a, 0x64, 0xee, 0xbf, 0x5a, 0xe3, 0xa4, 0x36, 0xa6, 0x46,
-	0x21, 0xe6, 0x57, 0xa9, 0x90, 0xbb, 0x8e, 0x4a, 0x85, 0x49, 0x61, 0x86, 0xa9, 0x9e, 0xfc, 0x87,
-	0x2e, 0xbe, 0x02, 0x00, 0x00, 0xff, 0xff, 0x99, 0x0f, 0xf4, 0x38, 0x9f, 0x04, 0x00, 0x00,
+var fileDescriptor_upload_service_3b4eef93eea338f0 = []byte{
+	// 459 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xa4, 0x54, 0x4d, 0xab, 0xd3, 0x40,
+	0x14, 0x6d, 0x3e, 0x8c, 0xcf, 0x1b, 0x45, 0x99, 0xf7, 0xa8, 0x25, 0x85, 0x2a, 0x71, 0xd3, 0x85,
+	0x06, 0x8c, 0x1b, 0x5b, 0x37, 0x22, 0x08, 0xed, 0xa2, 0x22, 0x41, 0x5d, 0x09, 0x32, 0x69, 0xa6,
+	0x10, 0x9a, 0x36, 0x31, 0x99, 0x29, 0x74, 0xe7, 0xef, 0x14, 0xfa, 0x5f, 0x4c, 0x66, 0xf2, 0x9d,
+	0xb4, 0x45, 0xde, 0xaa, 0x33, 0x93, 0x7b, 0x4e, 0xef, 0x39, 0x73, 0xee, 0xc0, 0x1d, 0x8b, 0x82,
+	0x10, 0x7b, 0xbf, 0x12, 0x12, 0x1f, 0xfc, 0x35, 0xb1, 0xa2, 0x38, 0xa4, 0x21, 0xd2, 0xc4, 0xa9,
+	0xe9, 0x00, 0xfa, 0xce, 0x57, 0x2b, 0xe2, 0xf9, 0xd8, 0x21, 0xbf, 0x19, 0x49, 0x28, 0x42, 0xa0,
+	0x6e, 0xfc, 0x80, 0x8c, 0xa4, 0x97, 0xd2, 0xf4, 0xb1, 0xc3, 0xd7, 0xe8, 0x19, 0x28, 0x5b, 0x72,
+	0x1c, 0xc9, 0xe9, 0xd1, 0x23, 0x27, 0x5b, 0xa2, 0x21, 0x68, 0x2e, 0x5b, 0x6f, 0x09, 0x1d, 0x29,
+	0xfc, 0x30, 0xdf, 0x99, 0x6f, 0xe0, 0xb6, 0xc1, 0x99, 0x44, 0xe1, 0x3e, 0x21, 0x59, 0x79, 0xc8,
+	0x68, 0xc4, 0x28, 0xa7, 0x4d, 0xcb, 0xc5, 0xce, 0x3c, 0x49, 0x30, 0xcc, 0xeb, 0x59, 0x40, 0xfd,
+	0x08, 0xc7, 0xf4, 0x52, 0x1f, 0x0b, 0xb8, 0xd9, 0x11, 0x8a, 0x3d, 0x4c, 0x71, 0xda, 0x8c, 0x32,
+	0xd5, 0xed, 0xd7, 0x96, 0x10, 0x63, 0xf5, 0xb3, 0x58, 0xab, 0xbc, 0xfc, 0xf3, 0x9e, 0xc6, 0x47,
+	0xa7, 0x44, 0x17, 0x8a, 0x94, 0x3e, 0x45, 0x6a, 0x5d, 0x91, 0xf1, 0x01, 0x9e, 0x34, 0x48, 0x0a,
+	0xa8, 0x54, 0x41, 0xef, 0xe0, 0xc1, 0x01, 0x07, 0x8c, 0xe4, 0x06, 0x89, 0xcd, 0x5c, 0x7e, 0x2f,
+	0x99, 0x6f, 0xe1, 0x79, 0xa7, 0xb1, 0x2b, 0x96, 0xcc, 0x60, 0x2c, 0x20, 0x69, 0x25, 0xdb, 0x61,
+	0x37, 0x20, 0xcb, 0xbd, 0x5f, 0xc1, 0x0c, 0xb8, 0x11, 0x8a, 0x97, 0x5e, 0x0e, 0x2c, 0xf7, 0xe6,
+	0x49, 0x29, 0xdc, 0x2c, 0xb1, 0x85, 0x9b, 0x1b, 0xb8, 0x65, 0x5d, 0x56, 0xce, 0xa0, 0xdb, 0x76,
+	0xd3, 0xc4, 0x36, 0xd8, 0xea, 0xe9, 0x67, 0x31, 0x70, 0xfa, 0x08, 0xd1, 0x0c, 0xd4, 0x4c, 0x25,
+	0x77, 0x42, 0xb7, 0x5f, 0x5d, 0x21, 0xfe, 0x9a, 0x96, 0xa6, 0x4c, 0x1c, 0x62, 0xfc, 0x95, 0x8a,
+	0xec, 0x34, 0x29, 0xbb, 0x7e, 0x57, 0x57, 0x25, 0xd7, 0xaf, 0x0a, 0xfd, 0xac, 0xc5, 0x43, 0xe1,
+	0xf1, 0xf8, 0xf8, 0xff, 0xca, 0xce, 0x45, 0xe6, 0x5e, 0x41, 0x30, 0xe6, 0xa0, 0x66, 0x62, 0xb3,
+	0x54, 0x73, 0x7f, 0xf2, 0x54, 0x67, 0x6b, 0x34, 0x01, 0xc8, 0x7e, 0xbf, 0xb0, 0x9d, 0x4b, 0x62,
+	0x0e, 0x55, 0x9c, 0xda, 0xc9, 0xa7, 0x87, 0x39, 0x6b, 0x95, 0xa6, 0x9a, 0x8e, 0xcb, 0x69, 0xb2,
+	0xff, 0xc8, 0xa0, 0x09, 0x4c, 0x3a, 0x3c, 0x7a, 0x6d, 0x34, 0x91, 0xd1, 0x9a, 0x9c, 0xda, 0x1b,
+	0x60, 0x8c, 0x7b, 0xbf, 0x89, 0xbf, 0x32, 0x07, 0xe8, 0x1b, 0x3c, 0x6d, 0xa5, 0x1a, 0x4d, 0x2e,
+	0xcf, 0xa1, 0xf1, 0xe2, 0xec, 0xf7, 0x92, 0xf5, 0x47, 0xc1, 0x5a, 0xaa, 0x6b, 0xb3, 0xb6, 0xaf,
+	0xaf, 0xcd, 0xda, 0xb1, 0xc5, 0x1c, 0x4c, 0x25, 0x57, 0xe3, 0xaf, 0xde, 0xbb, 0x7f, 0x01, 0x00,
+	0x00, 0xff, 0xff, 0xbd, 0xfb, 0x40, 0x6d, 0x0d, 0x05, 0x00, 0x00,
 }

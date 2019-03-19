@@ -11,8 +11,7 @@ service Upload {
     // In case of an error the error is returned.
     rpc UploadMedia(UploadMediaRequest) returns (UploadMediaResponse) {}
     rpc UploadMultipart(UploadMultipartRequest) returns (UploadMultipartResponse) {}
-    rpc UploadResumableInit(UploadResumableInitRequest) returns (UploadResumableInitResponse) {}
-    rpc UploadResumablePart(UploadResumablePartRequest) returns (UploadResumablePartResponse) {}
+    rpc UploadResumable(stream UploadResumableRequest) returns (UploadResumableResponse) {}
 }
 
 // UploadMediaRequest is the request for Media Upload.
@@ -54,31 +53,43 @@ message UploadMultipartResponse {
     string output = 1;
 }
 
-// UploadResumableInitRequest is the request for Initiating Resumable Upload.
-message UploadResumableInitRequest {
-    // File key to store in S3.
-    string key = 1;
-
-    // The bucket to upload the file to.
-    string bucket = 2;
-
-    // File metadata.
-    map<string, string> metadata = 3;
-}
-
 // UploadResumableInitResponse is the response for Initiating Resumable Upload.
 message UploadResumableInitResponse {
     // Upload ID generated for resumable upload of a file.
     string uploadId = 1;
 }
 
-// UploadResumablePartRequest is the request for Resumable Part Upload.
-message UploadResumablePartRequest {
-    // File part chunk.
-    bytes part = 1;
+// UploadResumableRequest is the request for Resumable Part Upload.
+message UploadResumableRequest {
+    // UploadResumableInit is the data for Initiating Resumable Upload.
+    message UploadResumableInit {
+        // File key to store in S3.
+        string key = 1;
+
+        // The bucket to upload the file to.
+        string bucket = 2;
+
+        // File metadata.
+        map<string, string> metadata = 3;
+    }
+
+    // Part is the current part to upload.
+    message Part {
+        // File part chunk.
+        bytes part = 1;
+
+        // Part number.
+        int64 partNumber = 2;
+    }
+    
+    oneof value {
+        UploadResumableInit uploadResumableInit = 1;
+        Part part = 2;
+    }
 }
 
-// UploadResumablePartResponse is the response for Resumable Part Upload.
-message UploadResumablePartResponse {
-    string etag = 1;
+// UploadResumableResponse is the response for Resumable Part Upload.
+message UploadResumableResponse {
+    // The location that the file was uploaded to.
+    string output = 1;
 }

@@ -4,7 +4,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"os/signal"
 	pb "upload-service/proto"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -40,7 +39,4 @@ func main() {
 	server := &UploadHandler{UploadService: UploadService{s3Client: s3Client}}
 	pb.RegisterUploadServer(grpcServer, server)
 	grpcServer.Serve(lis)
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt)
-	<-signalChan
 }

@@ -68,50 +68,6 @@ func (s UploadService) UploadFile(file io.Reader, metadata map[string]*string, k
 	return &output.Location, nil
 }
 
-func (s UploadService) completeMultipartUpload(resp *s3.CreateMultipartUploadOutput, completedParts []*s3.CompletedPart) (*s3.CompleteMultipartUploadOutput, error) {
-	completeInput := &s3.CompleteMultipartUploadInput{
-		Bucket:   resp.Bucket,
-		Key:      resp.Key,
-		UploadId: resp.UploadId,
-		MultipartUpload: &s3.CompletedMultipartUpload{
-			Parts: completedParts,
-		},
-	}
-	return s.s3Client.CompleteMultipartUpload(completeInput)
-}
-
-func (s UploadService) uploadPart(resp *s3.CreateMultipartUploadOutput, fileBytes []byte, partNumber int) (*s3.CompletedPart, error) {
-	tryNum := 1
-	partInput := &s3.UploadPartInput{
-		Body:          bytes.NewReader(fileBytes),
-		Bucket:        resp.Bucket,
-		Key:           resp.Key,
-		PartNumber:    aws.Int64(int64(partNumber)),
-		UploadId:      resp.UploadId,
-		ContentLength: aws.Int64(int64(len(fileBytes))),
-	}
-
-	for tryNum <= s.s3Client.MaxRetries() {
-		uploadResult, err := s.s3Client.UploadPart(partInput)
-		if err != nil {
-			if tryNum == s.s3Client.MaxRetries() {
-				if aerr, ok := err.(awserr.Error); ok {
-					return nil, aerr
-				}
-				return nil, err
-			}
-
-			tryNum++
-		} else {
-			return &s3.CompletedPart{
-				ETag:       uploadResult.ETag,
-				PartNumber: aws.Int64(int64(partNumber)),
-			}, nil
-		}
-	}
-	return nil, nil
-}
-
 // UploadHandler handles upload requests by uploading the file's data to aws-s3 Object Storage
 type UploadHandler struct {
 	UploadService
@@ -153,12 +109,44 @@ func (h UploadHandler) UploadMultipart(ctx context.Context, request *pb.UploadMu
 	return &pb.UploadMultipartResponse{Output: *output}, nil
 }
 
-// UploadResumableInit ...
-func (h UploadHandler) UploadResumableInit(context.Context, *pb.UploadResumableInitRequest) (*pb.UploadResumableInitResponse, error) {
-	return &pb.UploadResumableInitResponse{UploadId: ""}, nil
-}
+// UploadResumable ...
+func (h UploadHandler) UploadResumable(stream pb.Upload_UploadResumableServer) error {
+	_, err := stream.Recv()
+	if err != nil {
+		return err
+	}
 
-// UploadResumablePart ...
-func (h UploadHandler) UploadResumablePart(context.Context, *pb.UploadResumablePartRequest) (*pb.UploadResumablePartResponse, error) {
-	return &pb.UploadResumablePartResponse{Etag: ""}, nil
+	input := &s3.CreateMultipartUploadInput{
+		Bucket: aws.String("examplebucket"),
+		Key:    aws.String("largeobject"),
+	}
+
+	_, err = h.s3Client.CreateMultipartUpload(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+	}
+
+	for {
+		_, err := stream.Recv()
+
+		if err == io.EOF {
+			return stream.SendAndClose(nil)
+		}
+
+		if err != nil {
+			return fmt.Errorf("failed uploading part: %v", err)
+		}
+		break;
+	}
+	
+	return nil
 }
