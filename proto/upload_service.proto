@@ -10,6 +10,7 @@ service Upload {
     //
     // In case of an error the error is returned.
     rpc UploadMedia(UploadMediaRequest) returns (UploadMediaResponse) {}
+    rpc UploadMultipart(UploadMultipartRequest) returns (UploadMultipartResponse) {}
 }
 
 // UploadMediaRequest is the request for Upload.
@@ -26,6 +27,26 @@ message UploadMediaRequest {
 
 // UploadMediaResponse is the response for Upload.
 message UploadMediaResponse {
+    // The location that the file uploaded to.
+    string output = 1;
+}
+
+message UploadMultipartRequest {
+    // File to upload.
+    bytes file = 1;
+
+    // File metadata.
+    map<string, string> metadata = 2;
+
+    // File key to store in S3.
+    string key = 3;
+
+    // The bucket we want to upload the file to.
+    string bucket = 4;
+}
+
+// UploadMultipartResponse is the response for Upload.
+message UploadMultipartResponse {
     // The location that the file uploaded to.
     string output = 1;
 }
