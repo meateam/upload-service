@@ -40,7 +40,7 @@ func (m *UploadMediaRequest) Reset()         { *m = UploadMediaRequest{} }
 func (m *UploadMediaRequest) String() string { return proto.CompactTextString(m) }
 func (*UploadMediaRequest) ProtoMessage()    {}
 func (*UploadMediaRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_7d9500c60a7882d8, []int{0}
+	return fileDescriptor_upload_service_89a12bcf3fd2e91a, []int{0}
 }
 func (m *UploadMediaRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadMediaRequest.Unmarshal(m, b)
@@ -94,7 +94,7 @@ func (m *UploadMediaResponse) Reset()         { *m = UploadMediaResponse{} }
 func (m *UploadMediaResponse) String() string { return proto.CompactTextString(m) }
 func (*UploadMediaResponse) ProtoMessage()    {}
 func (*UploadMediaResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_7d9500c60a7882d8, []int{1}
+	return fileDescriptor_upload_service_89a12bcf3fd2e91a, []int{1}
 }
 func (m *UploadMediaResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadMediaResponse.Unmarshal(m, b)
@@ -121,9 +121,118 @@ func (m *UploadMediaResponse) GetOutput() string {
 	return ""
 }
 
+type UploadMultipartRequest struct {
+	// File to upload.
+	File []byte `protobuf:"bytes,1,opt,name=file,proto3" json:"file,omitempty"`
+	// File metadata.
+	Metadata map[string]string `protobuf:"bytes,2,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// File key to store in S3.
+	Key string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
+	// The bucket we want to upload the file to.
+	Bucket               string   `protobuf:"bytes,4,opt,name=bucket,proto3" json:"bucket,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UploadMultipartRequest) Reset()         { *m = UploadMultipartRequest{} }
+func (m *UploadMultipartRequest) String() string { return proto.CompactTextString(m) }
+func (*UploadMultipartRequest) ProtoMessage()    {}
+func (*UploadMultipartRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_upload_service_89a12bcf3fd2e91a, []int{2}
+}
+func (m *UploadMultipartRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UploadMultipartRequest.Unmarshal(m, b)
+}
+func (m *UploadMultipartRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UploadMultipartRequest.Marshal(b, m, deterministic)
+}
+func (dst *UploadMultipartRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UploadMultipartRequest.Merge(dst, src)
+}
+func (m *UploadMultipartRequest) XXX_Size() int {
+	return xxx_messageInfo_UploadMultipartRequest.Size(m)
+}
+func (m *UploadMultipartRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UploadMultipartRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UploadMultipartRequest proto.InternalMessageInfo
+
+func (m *UploadMultipartRequest) GetFile() []byte {
+	if m != nil {
+		return m.File
+	}
+	return nil
+}
+
+func (m *UploadMultipartRequest) GetMetadata() map[string]string {
+	if m != nil {
+		return m.Metadata
+	}
+	return nil
+}
+
+func (m *UploadMultipartRequest) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *UploadMultipartRequest) GetBucket() string {
+	if m != nil {
+		return m.Bucket
+	}
+	return ""
+}
+
+// UploadMultipartResponse is the response for Upload.
+type UploadMultipartResponse struct {
+	// The location that the file uploaded to.
+	Output               string   `protobuf:"bytes,1,opt,name=output,proto3" json:"output,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UploadMultipartResponse) Reset()         { *m = UploadMultipartResponse{} }
+func (m *UploadMultipartResponse) String() string { return proto.CompactTextString(m) }
+func (*UploadMultipartResponse) ProtoMessage()    {}
+func (*UploadMultipartResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_upload_service_89a12bcf3fd2e91a, []int{3}
+}
+func (m *UploadMultipartResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UploadMultipartResponse.Unmarshal(m, b)
+}
+func (m *UploadMultipartResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UploadMultipartResponse.Marshal(b, m, deterministic)
+}
+func (dst *UploadMultipartResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UploadMultipartResponse.Merge(dst, src)
+}
+func (m *UploadMultipartResponse) XXX_Size() int {
+	return xxx_messageInfo_UploadMultipartResponse.Size(m)
+}
+func (m *UploadMultipartResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_UploadMultipartResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UploadMultipartResponse proto.InternalMessageInfo
+
+func (m *UploadMultipartResponse) GetOutput() string {
+	if m != nil {
+		return m.Output
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*UploadMediaRequest)(nil), "upload.UploadMediaRequest")
 	proto.RegisterType((*UploadMediaResponse)(nil), "upload.UploadMediaResponse")
+	proto.RegisterType((*UploadMultipartRequest)(nil), "upload.UploadMultipartRequest")
+	proto.RegisterMapType((map[string]string)(nil), "upload.UploadMultipartRequest.MetadataEntry")
+	proto.RegisterType((*UploadMultipartResponse)(nil), "upload.UploadMultipartResponse")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -144,6 +253,7 @@ type UploadClient interface {
 	//
 	// In case of an error the error is returned.
 	UploadMedia(ctx context.Context, in *UploadMediaRequest, opts ...grpc.CallOption) (*UploadMediaResponse, error)
+	UploadMultipart(ctx context.Context, in *UploadMultipartRequest, opts ...grpc.CallOption) (*UploadMultipartResponse, error)
 }
 
 type uploadClient struct {
@@ -163,6 +273,15 @@ func (c *uploadClient) UploadMedia(ctx context.Context, in *UploadMediaRequest, 
 	return out, nil
 }
 
+func (c *uploadClient) UploadMultipart(ctx context.Context, in *UploadMultipartRequest, opts ...grpc.CallOption) (*UploadMultipartResponse, error) {
+	out := new(UploadMultipartResponse)
+	err := c.cc.Invoke(ctx, "/upload.Upload/UploadMultipart", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UploadServer is the server API for Upload service.
 type UploadServer interface {
 	// The function Uploads the given file.
@@ -171,6 +290,7 @@ type UploadServer interface {
 	//
 	// In case of an error the error is returned.
 	UploadMedia(context.Context, *UploadMediaRequest) (*UploadMediaResponse, error)
+	UploadMultipart(context.Context, *UploadMultipartRequest) (*UploadMultipartResponse, error)
 }
 
 func RegisterUploadServer(s *grpc.Server, srv UploadServer) {
@@ -195,6 +315,24 @@ func _Upload_UploadMedia_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Upload_UploadMultipart_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadMultipartRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UploadServer).UploadMultipart(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/upload.Upload/UploadMultipart",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UploadServer).UploadMultipart(ctx, req.(*UploadMultipartRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Upload_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "upload.Upload",
 	HandlerType: (*UploadServer)(nil),
@@ -203,26 +341,38 @@ var _Upload_serviceDesc = grpc.ServiceDesc{
 			MethodName: "UploadMedia",
 			Handler:    _Upload_UploadMedia_Handler,
 		},
+		{
+			MethodName: "UploadMultipart",
+			Handler:    _Upload_UploadMultipart_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "upload_service.proto",
 }
 
 func init() {
-	proto.RegisterFile("upload_service.proto", fileDescriptor_upload_service_7d9500c60a7882d8)
+	proto.RegisterFile("upload_service.proto", fileDescriptor_upload_service_89a12bcf3fd2e91a)
 }
 
-var fileDescriptor_upload_service_7d9500c60a7882d8 = []byte{
-	// 176 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xe2, 0x12, 0x29, 0x2d, 0xc8, 0xc9,
-	0x4f, 0x4c, 0x89, 0x2f, 0x4e, 0x2d, 0x2a, 0xcb, 0x4c, 0x4e, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9,
-	0x17, 0x62, 0x83, 0x88, 0x2a, 0x05, 0x71, 0x09, 0x85, 0x82, 0x59, 0xbe, 0xa9, 0x29, 0x99, 0x89,
-	0x41, 0xa9, 0x85, 0xa5, 0xa9, 0xc5, 0x25, 0x42, 0x42, 0x5c, 0x2c, 0x69, 0x99, 0x39, 0xa9, 0x12,
-	0x8c, 0x0a, 0x8c, 0x1a, 0x3c, 0x41, 0x60, 0xb6, 0x90, 0x00, 0x17, 0x73, 0x76, 0x6a, 0xa5, 0x04,
-	0x13, 0x50, 0x88, 0x33, 0x08, 0xc4, 0x14, 0x12, 0xe3, 0x62, 0x4b, 0x2a, 0x4d, 0xce, 0x4e, 0x2d,
-	0x91, 0x60, 0x06, 0x0b, 0x42, 0x79, 0x4a, 0xba, 0x5c, 0xc2, 0x28, 0x66, 0x16, 0x17, 0xe4, 0xe7,
-	0x15, 0xa7, 0x82, 0x94, 0xe7, 0x97, 0x96, 0x14, 0x94, 0x96, 0x80, 0x8d, 0x05, 0x2a, 0x87, 0xf0,
-	0x8c, 0x82, 0xb8, 0xd8, 0x20, 0xca, 0x85, 0x3c, 0xb8, 0xb8, 0x91, 0x34, 0x0a, 0x49, 0xe9, 0x41,
-	0x1c, 0xa9, 0x87, 0xe9, 0x42, 0x29, 0x69, 0xac, 0x72, 0x10, 0x9b, 0x94, 0x18, 0x92, 0xd8, 0xc0,
-	0xbe, 0x34, 0x06, 0x04, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0x06, 0xa7, 0xfd, 0x00, 0x00, 0x00,
+var fileDescriptor_upload_service_89a12bcf3fd2e91a = []byte{
+	// 290 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x7c, 0x52, 0x4d, 0x4b, 0xc3, 0x40,
+	0x14, 0x74, 0x9b, 0x1a, 0xf4, 0x55, 0x51, 0xd6, 0x52, 0x4b, 0x04, 0x95, 0x9c, 0x7a, 0xd0, 0x80,
+	0xf5, 0x22, 0x7a, 0x16, 0xbc, 0xf4, 0xb2, 0xe8, 0x59, 0xb6, 0xcd, 0x13, 0x42, 0x63, 0x77, 0x4d,
+	0xde, 0x16, 0xfa, 0x8f, 0xfc, 0x53, 0xfe, 0x17, 0xd3, 0xdd, 0x44, 0xd3, 0x1a, 0x73, 0x7b, 0x5f,
+	0x33, 0x99, 0x99, 0x2c, 0xf4, 0x8d, 0x4e, 0x95, 0x8c, 0x5f, 0x73, 0xcc, 0x96, 0xc9, 0x0c, 0x23,
+	0x9d, 0x29, 0x52, 0xdc, 0x77, 0xd3, 0x50, 0x00, 0x7f, 0xb1, 0xd5, 0x04, 0xe3, 0x44, 0x0a, 0xfc,
+	0x30, 0x98, 0x13, 0xe7, 0xd0, 0x7d, 0x4b, 0x52, 0x1c, 0xb2, 0x4b, 0x36, 0x3a, 0x10, 0xb6, 0xe6,
+	0xc7, 0xe0, 0xcd, 0x71, 0x35, 0xec, 0x14, 0xa3, 0x7d, 0xb1, 0x2e, 0xf9, 0x00, 0xfc, 0xa9, 0x99,
+	0xcd, 0x91, 0x86, 0x9e, 0x1d, 0x96, 0x5d, 0x78, 0x0d, 0x27, 0x1b, 0x9c, 0xb9, 0x56, 0x8b, 0x1c,
+	0xd7, 0xe7, 0xca, 0x90, 0x36, 0x64, 0x69, 0x8b, 0x73, 0xd7, 0x85, 0x5f, 0x0c, 0x06, 0xe5, 0xbd,
+	0x49, 0x29, 0xd1, 0x32, 0xa3, 0x36, 0x1d, 0x4f, 0xb0, 0xf7, 0x8e, 0x24, 0x63, 0x49, 0xb2, 0x10,
+	0xe3, 0x8d, 0x7a, 0xe3, 0xab, 0xc8, 0x99, 0x89, 0x9a, 0x59, 0xa2, 0x49, 0x79, 0xfe, 0xb8, 0xa0,
+	0x6c, 0x25, 0x7e, 0xd0, 0x95, 0x23, 0xaf, 0xc9, 0x51, 0xb7, 0xee, 0x28, 0x78, 0x80, 0xc3, 0x0d,
+	0x92, 0x0a, 0xca, 0x7e, 0xa1, 0x7d, 0xd8, 0x5d, 0xca, 0xd4, 0x60, 0x19, 0x90, 0x6b, 0xee, 0x3b,
+	0x77, 0x2c, 0xbc, 0x81, 0xd3, 0x3f, 0xc2, 0xda, 0x23, 0x19, 0x7f, 0x32, 0xf0, 0x1d, 0xa6, 0xb0,
+	0xdb, 0xab, 0x85, 0xc9, 0x83, 0x2d, 0xaf, 0xb5, 0xbf, 0x16, 0x9c, 0x35, 0xee, 0xdc, 0xa7, 0xc2,
+	0x1d, 0xfe, 0x0c, 0x47, 0x5b, 0x3a, 0xf8, 0x79, 0x7b, 0x72, 0xc1, 0xc5, 0xbf, 0xfb, 0x8a, 0x75,
+	0xea, 0xdb, 0xf7, 0x74, 0xfb, 0x1d, 0x00, 0x00, 0xff, 0xff, 0x78, 0xce, 0x8c, 0x44, 0x67, 0x02,
+	0x00, 0x00,
 }
