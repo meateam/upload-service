@@ -20,6 +20,7 @@ type UploadService struct {
 
 // UploadFile uploads a file to the given bucket in S3.
 // If metadata is a non-nil map then it will be uploaded with the file.
+// Returns the file's location and an error if any occured.
 func (s UploadService) UploadFile(file io.Reader, metadata map[string]*string, key *string, bucket *string) (*string, error) {
 	if key == nil || *key == "" {
 		return nil, fmt.Errorf("key is required")
@@ -111,9 +112,15 @@ func (h UploadHandler) UploadMultipart(ctx context.Context, request *pb.UploadMu
 
 // UploadResumable ...
 func (h UploadHandler) UploadResumable(stream pb.Upload_UploadResumableServer) error {
-	_, err := stream.Recv()
+	chunk, err := stream.Recv()
 	if err != nil {
 		return err
+	}
+
+	switch v := chunk.Value.(type) {
+	case *pb.UploadResumableRequest_UploadResumableInit_:
+		_ = v
+	case *pb.UploadResumableRequest_Part_:
 	}
 
 	input := &s3.CreateMultipartUploadInput{
