@@ -160,7 +160,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 				s3Client: tt.fields.s3Client,
 			}
 
-			got, err := s.UploadFile(tt.args.file, tt.args.metadata, tt.args.key, tt.args.bucket)
+			got, err := s.UploadFile(tt.args.file, tt.args.key, tt.args.bucket, tt.args.metadata)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UploadService.UploadFile() error = %v, wantErr %v", err, tt.wantErr)
 				return

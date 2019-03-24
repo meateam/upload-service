@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"bytes"
 	"context"
 	"fmt"
 	"io"
+	"sync"
 	pb "upload-service/proto"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -21,7 +21,7 @@ type UploadService struct {
 // UploadFile uploads a file to the given bucket in S3.
 // If metadata is a non-nil map then it will be uploaded with the file.
 // Returns the file's location and an error if any occured.
-func (s UploadService) UploadFile(file io.Reader, metadata map[string]*string, key *string, bucket *string) (*string, error) {
+func (s UploadService) UploadFile(file io.Reader, key *string, bucket *string, metadata map[string]*string) (*string, error) {
 	if key == nil || *key == "" {
 		return nil, fmt.Errorf("key is required")
 	}
@@ -69,6 +69,127 @@ func (s UploadService) UploadFile(file io.Reader, metadata map[string]*string, k
 	return &output.Location, nil
 }
 
+// UploadInit ...
+func (s UploadService) UploadInit(key *string, bucket *string, metadata map[string]*string) (*s3.CreateMultipartUploadOutput, error) {
+	if key == nil || *key == "" {
+		return nil, fmt.Errorf("key is required")
+	}
+
+	if bucket == nil || *bucket == "" {
+		return nil, fmt.Errorf("bucket name is required")
+	}
+
+	input := &s3.CreateMultipartUploadInput{
+		Bucket:   bucket,
+		Key:      key,
+		Metadata: metadata,
+	}
+
+	result, err := s.s3Client.CreateMultipartUpload(input)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, err
+}
+
+// UploadComplete ...
+func (s UploadService) UploadComplete(uploadID *string, key *string, bucket *string) (*s3.CompleteMultipartUploadOutput, error) {
+	if key == nil || *key == "" {
+		return nil, fmt.Errorf("key is required")
+	}
+
+	if bucket == nil || *bucket == "" {
+		return nil, fmt.Errorf("bucket name is required")
+	}
+
+	if uploadID == nil || *uploadID == "" {
+		return nil, fmt.Errorf("upload id is required")
+	}
+
+	listPartsInput := &s3.ListPartsInput{
+		UploadId: uploadID,
+		Key:      key,
+		Bucket:   bucket,
+	}
+
+	parts, err := s.s3Client.ListParts(listPartsInput)
+	if err != nil {
+		return nil, err
+	}
+
+	completedMultipartParts := make([]*s3.CompletedPart, len(parts.Parts))
+
+	for _, v := range parts.Parts {
+		completedPart := &s3.CompletedPart{
+			ETag:       v.ETag,
+			PartNumber: v.PartNumber,
+		}
+
+		completedMultipartParts = append(completedMultipartParts, completedPart)
+	}
+
+	completedMultipartUpload := &s3.CompletedMultipartUpload{
+		Parts: completedMultipartParts,
+	}
+
+	input := &s3.CompleteMultipartUploadInput{
+		Bucket:          bucket,
+		Key:             key,
+		MultipartUpload: completedMultipartUpload,
+		UploadId:        uploadID,
+	}
+
+	result, err := s.s3Client.CompleteMultipartUpload(input)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UploadPart ...
+func (s UploadService) UploadPart(uploadID *string, key *string, bucket *string, partNumber *int64, body io.ReadSeeker) (*s3.UploadPartOutput, error) {
+	if body == nil {
+		return nil, fmt.Errorf("part body is required")
+	}
+
+	if key == nil || *key == "" {
+		return nil, fmt.Errorf("key is required")
+	}
+
+	if bucket == nil || *bucket == "" {
+		return nil, fmt.Errorf("bucket name is required")
+	}
+
+	if uploadID == nil || *uploadID == "" {
+		return nil, fmt.Errorf("upload id is required")
+	}
+
+	if partNumber == nil {
+		return nil, fmt.Errorf("part number is required")
+	}
+
+	if *partNumber < 1 || *partNumber > 10000 {
+		return nil, fmt.Errorf("part number must be between 1 and 10,000")
+	}
+
+	input := &s3.UploadPartInput{
+		Body:       body,
+		Bucket:     bucket,
+		Key:        key,
+		PartNumber: partNumber,
+		UploadId:   uploadID,
+	}
+
+	result, err := s.s3Client.UploadPart(input)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // UploadHandler handles upload requests by uploading the file's data to aws-s3 Object Storage
 type UploadHandler struct {
 	UploadService
@@ -77,10 +198,10 @@ type UploadHandler struct {
 // UploadMedia is the request handler for file uploads, it is responsible for getting the file
 // from the request's body and uploading it to the bucket of the user who uploaded it
 func (h UploadHandler) UploadMedia(ctx context.Context, request *pb.UploadMediaRequest) (*pb.UploadMediaResponse, error) {
-	bucket := aws.String(request.Bucket)
-	key := aws.String(request.Key)
-	file := bytes.NewReader(request.File)
-	output, err := h.UploadFile(file, nil, key, bucket)
+	output, err := h.UploadFile(bytes.NewReader(request.GetFile()),
+		aws.String(request.GetKey()),
+		aws.String(request.GetBucket()),
+		nil)
 
 	if err != nil {
 		return nil, err
@@ -92,16 +213,10 @@ func (h UploadHandler) UploadMedia(ctx context.Context, request *pb.UploadMediaR
 // UploadMultipart is the request handler for file uploads, it is responsible for getting the file
 // from the request's body and uploading it to the bucket of the user who uploaded it
 func (h UploadHandler) UploadMultipart(ctx context.Context, request *pb.UploadMultipartRequest) (*pb.UploadMultipartResponse, error) {
-	bucket := aws.String(request.Bucket)
-	key := aws.String(request.Key)
-	file := bytes.NewReader(request.File)
-	metadata := make(map[string]*string)
-
-	for k, v := range request.Metadata {
-		metadata[k] = aws.String(v)
-	}
-
-	output, err := h.UploadFile(file, metadata, key, bucket)
+	output, err := h.UploadFile(bytes.NewReader(request.GetFile()),
+		aws.String(request.GetKey()),
+		aws.String(request.GetBucket()),
+		aws.StringMap(request.GetMetadata()))
 
 	if err != nil {
 		return nil, err
@@ -110,50 +225,80 @@ func (h UploadHandler) UploadMultipart(ctx context.Context, request *pb.UploadMu
 	return &pb.UploadMultipartResponse{Output: *output}, nil
 }
 
-// UploadResumable ...
-func (h UploadHandler) UploadResumable(stream pb.Upload_UploadResumableServer) error {
-	chunk, err := stream.Recv()
+// UploadInit ...
+func (h UploadHandler) UploadInit(ctx context.Context, request *pb.UploadInitRequest) (*pb.UploadInitResponse, error) {
+	result, err := h.UploadService.UploadInit(aws.String(request.GetKey()),
+		aws.String(request.GetBucket()),
+		aws.StringMap(request.GetMetadata()))
+
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	switch v := chunk.Value.(type) {
-	case *pb.UploadResumableRequest_UploadResumableInit_:
-		_ = v
-	case *pb.UploadResumableRequest_Part_:
+	response := &pb.UploadInitResponse{
+		UploadId: *result.UploadId,
+		Key:      *result.Key,
+		Bucket:   *result.Bucket,
 	}
 
-	input := &s3.CreateMultipartUploadInput{
-		Bucket: aws.String("examplebucket"),
-		Key:    aws.String("largeobject"),
-	}
+	return response, nil
+}
 
-	_, err = h.s3Client.CreateMultipartUpload(input)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			default:
-				fmt.Println(aerr.Error())
-			}
-		} else {
-			// Print the error, cast err to awserr.Error to get the Code and
-			// Message from an error.
-			fmt.Println(err.Error())
-		}
-	}
-
+// UploadPart ...
+func (h UploadHandler) UploadPart(stream pb.Upload_UploadPartServer) error {
+	wg := sync.WaitGroup{}
 	for {
-		_, err := stream.Recv()
+		part, err := stream.Recv()
 
 		if err == io.EOF {
-			return stream.SendAndClose(nil)
+			wg.Wait()
+			return nil
 		}
 
 		if err != nil {
-			return fmt.Errorf("failed uploading part: %v", err)
+			errResponse := &pb.UploadPartResponse{Code: 500, Message: fmt.Sprintf("failed fetching part: %v", err)}
+			if err := stream.Send(errResponse); err != nil {
+				return err
+			}
 		}
-		break;
+
+		wg.Add(1)
+		go func() error {
+			defer wg.Done()
+
+			result, err := h.UploadService.UploadPart(aws.String(part.GetUploadId()),
+				aws.String(part.GetKey()),
+				aws.String(part.GetBucket()),
+				aws.Int64(part.GetPartNumber()),
+				bytes.NewReader(part.GetPart()))
+
+			resp := &pb.UploadPartResponse{
+				Code:    200,
+				Message: fmt.Sprintf("successfully uploaded part %s", *result.ETag),
+			}
+
+			if err != nil {
+				resp = &pb.UploadPartResponse{
+					Code:    500,
+					Message: fmt.Sprintf("failed uploading part: %v", err),
+				}
+			}
+
+			if err := stream.Send(resp); err != nil {
+				return err
+			}
+
+			return nil
+		}()
 	}
-	
-	return nil
+}
+
+// UploadComplete ...
+func (h UploadHandler) UploadComplete(ctx context.Context, request *pb.UploadCompleteRequest) (*pb.UploadCompleteResponse, error) {
+	result, err := h.UploadService.UploadComplete(aws.String(request.GetUploadId()), aws.String(request.GetKey()), aws.String(request.GetBucket()))
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.UploadCompleteResponse{Output: *result.Location}, nil
 }

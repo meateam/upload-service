@@ -2,94 +2,125 @@ syntax = "proto3";
 
 package upload;
 
-// Interface exported by the server.
+// Interface exported by the server
 service Upload {
-    // The function Uploads the given file.
+    // The function Uploads the given file
     //
-    // Returns the Location of the file as output.
+    // Returns the Location of the file as output
     //
-    // In case of an error the error is returned.
+    // In case of an error the error is returned
     rpc UploadMedia(UploadMediaRequest) returns (UploadMediaResponse) {}
     rpc UploadMultipart(UploadMultipartRequest) returns (UploadMultipartResponse) {}
-    rpc UploadResumable(stream UploadResumableRequest) returns (UploadResumableResponse) {}
+    rpc UploadInit(UploadInitRequest) returns (UploadInitResponse) {}
+    rpc UploadPart(stream UploadPartRequest) returns (stream UploadPartResponse) {}
+    rpc UploadComplete(UploadCompleteRequest) returns (UploadCompleteResponse) {}
 }
 
-// UploadMediaRequest is the request for Media Upload.
+// UploadMediaRequest is the request for media upload
 message UploadMediaRequest {
-    // File is the file to upload.
+    // File is the file to upload
     bytes file = 1;
 
-    // File key to store in S3.
+    // File key to store in S3
     string key = 2;
 
-    // The bucket to upload the file to.
+    // The bucket to upload the file to
     string bucket = 3;
 }
 
-// UploadMediaResponse is the response for Media Upload.
+// UploadMediaResponse is the response for media upload
 message UploadMediaResponse {
-    // The location that the file was uploaded to.
+    // The location that the file was uploaded to
     string output = 1;
 }
 
-// UploadMultipartRequest is the request for Multipart Upload.
+// UploadMultipartRequest is the request for multipart upload
 message UploadMultipartRequest {
-    // File to upload.
+    // File to upload
     bytes file = 1;
 
-    // File metadata.
+    // File metadata
     map<string, string> metadata = 2;
 
-    // File key to store in S3.
+    // File key to store in S3
     string key = 3;
 
-    // The bucket to upload the file to.
+    // The bucket to upload the file to
     string bucket = 4;
 }
 
-// UploadMultipartResponse is the response for Multipart Upload.
+// UploadMultipartResponse is the response for multipart upload
 message UploadMultipartResponse {
-    // The location that the file was uploaded to.
+    // The location that the file was uploaded to
     string output = 1;
 }
 
-// UploadResumableInitResponse is the response for Initiating Resumable Upload.
-message UploadResumableInitResponse {
-    // Upload ID generated for resumable upload of a file.
+// UploadInitRequest is the data for initiating resumable upload
+message UploadInitRequest {
+    // File key to store in S3
+    string key = 1;
+
+    // The bucket to upload the file to
+    string bucket = 2;
+
+    // File metadata
+    map<string, string> metadata = 3;
+}
+
+// UploadInitResponse is the response for initiating resumable upload
+message UploadInitResponse {
+    // Upload ID generated for resumable upload of a file
     string uploadId = 1;
+
+    // File key to store in S3
+    string key = 2;
+
+    // The bucket to upload the file to
+    string bucket = 3;
 }
 
-// UploadResumableRequest is the request for Resumable Part Upload.
-message UploadResumableRequest {
-    // UploadResumableInit is the data for Initiating Resumable Upload.
-    message UploadResumableInit {
-        // File key to store in S3.
-        string key = 1;
+// UploadPartRequest is the request for resumable part uload
+message UploadPartRequest {
+    // File part chunk
+    bytes part = 1;
 
-        // The bucket to upload the file to.
-        string bucket = 2;
+    // Part number
+    int64 partNumber = 2;
 
-        // File metadata.
-        map<string, string> metadata = 3;
-    }
+    // Upload ID generated for resumable upload of a file
+    string uploadId = 3;
 
-    // Part is the current part to upload.
-    message Part {
-        // File part chunk.
-        bytes part = 1;
+    // File key to store in S3
+    string key = 4;
 
-        // Part number.
-        int64 partNumber = 2;
-    }
-    
-    oneof value {
-        UploadResumableInit uploadResumableInit = 1;
-        Part part = 2;
-    }
+    // The bucket to upload the file to
+    string bucket = 5;
 }
 
-// UploadResumableResponse is the response for Resumable Part Upload.
-message UploadResumableResponse {
-    // The location that the file was uploaded to.
+// UploadPartResponse is the response for resumable part upload
+message UploadPartResponse {
+    // Upload status code
+    int32 code = 1;
+
+    // Upload status message
+    string message = 2;
+}
+
+// UploadCompleteRequest is the request for completing resumable upload
+message UploadCompleteRequest {
+    /// Upload ID generated for resumable upload of a file
+    string uploadId = 1;
+
+    // File key to store in S3
+    string key = 2;
+
+    // The bucket to upload the file to
+    string bucket = 3;
+}
+
+// UploadCompleteResponse is the response for completing resumable upload
+message UploadCompleteResponse {
+    // The location that the file was uploaded to
     string output = 1;
+
 }
