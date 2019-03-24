@@ -295,3 +295,205 @@ func TestUploadHandler_UploadMedia(t *testing.T) {
 		})
 	}
 }
+
+func TestUploadService_UploadInit(t *testing.T) {
+	type fields struct {
+		s3Client *s3.S3
+	}
+	type args struct {
+		key      *string
+		bucket   *string
+		metadata map[string]*string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *s3.CreateMultipartUploadOutput
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := UploadService{
+				s3Client: tt.fields.s3Client,
+			}
+			got, err := s.UploadInit(tt.args.key, tt.args.bucket, tt.args.metadata)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UploadService.UploadInit() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("UploadService.UploadInit() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUploadHandler_UploadInit(t *testing.T) {
+	type fields struct {
+		UploadService UploadService
+	}
+	type args struct {
+		ctx     context.Context
+		request *pb.UploadInitRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *pb.UploadInitResponse
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := UploadHandler{
+				UploadService: tt.fields.UploadService,
+			}
+			got, err := h.UploadInit(tt.args.ctx, tt.args.request)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UploadHandler.UploadInit() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("UploadHandler.UploadInit() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUploadService_UploadComplete(t *testing.T) {
+	type fields struct {
+		s3Client *s3.S3
+	}
+	type args struct {
+		uploadID *string
+		key      *string
+		bucket   *string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *s3.CompleteMultipartUploadOutput
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := UploadService{
+				s3Client: tt.fields.s3Client,
+			}
+			got, err := s.UploadComplete(tt.args.uploadID, tt.args.key, tt.args.bucket)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UploadService.UploadComplete() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("UploadService.UploadComplete() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUploadHandler_UploadComplete(t *testing.T) {
+	type fields struct {
+		UploadService UploadService
+	}
+	type args struct {
+		ctx     context.Context
+		request *pb.UploadCompleteRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *pb.UploadCompleteResponse
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := UploadHandler{
+				UploadService: tt.fields.UploadService,
+			}
+			got, err := h.UploadComplete(tt.args.ctx, tt.args.request)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UploadHandler.UploadComplete() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("UploadHandler.UploadComplete() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUploadService_UploadPart(t *testing.T) {
+	type fields struct {
+		s3Client *s3.S3
+	}
+	type args struct {
+		uploadID   *string
+		key        *string
+		bucket     *string
+		partNumber *int64
+		body       io.ReadSeeker
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *s3.UploadPartOutput
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := UploadService{
+				s3Client: tt.fields.s3Client,
+			}
+			got, err := s.UploadPart(tt.args.uploadID, tt.args.key, tt.args.bucket, tt.args.partNumber, tt.args.body)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UploadService.UploadPart() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("UploadService.UploadPart() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUploadHandler_UploadPart(t *testing.T) {
+	type fields struct {
+		UploadService UploadService
+	}
+	type args struct {
+		stream pb.Upload_UploadPartServer
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := UploadHandler{
+				UploadService: tt.fields.UploadService,
+			}
+			if err := h.UploadPart(tt.args.stream); (err != nil) != tt.wantErr {
+				t.Errorf("UploadHandler.UploadPart() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
