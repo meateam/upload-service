@@ -52,7 +52,7 @@ message UploadMultipartRequest {
 // UploadMultipartResponse is the response for multipart upload
 message UploadMultipartResponse {
     // The location that the file was uploaded to
-    string output = 1;
+    string location = 1;
 }
 
 // UploadInitRequest is the data for initiating resumable upload
@@ -121,6 +121,6 @@ message UploadCompleteRequest {
 // UploadCompleteResponse is the response for completing resumable upload
 message UploadCompleteResponse {
     // The location that the file was uploaded to
-    string output = 1;
+    string location = 1;
 
 }
