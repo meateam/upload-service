@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 TEMP_DIR=/tmp
 
@@ -17,9 +17,9 @@ curl -OL "https://github.com/google/protobuf/releases/download/v$VERSION/protoc-
 unzip "protoc-$VERSION-linux-x86_64.zip" -d protoc3
 
 # Move protoc to /usr/local/bin/
-sudo mv protoc3/bin/* /usr/local/bin/
+mv protoc3/bin/* /usr/local/bin/
 
 # Move protoc3/include to /usr/local/include/
-sudo mv protoc3/include/* /usr/local/include/
+mv protoc3/include/* /usr/local/include/
 
 rm -rf $TEMP_DIR/protoc_inst
