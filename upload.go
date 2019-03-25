@@ -276,15 +276,17 @@ func (h UploadHandler) UploadPart(stream pb.Upload_UploadPartServer) error {
 				aws.Int64(part.GetPartNumber()),
 				bytes.NewReader(part.GetPart()))
 
-			resp := &pb.UploadPartResponse{
-				Code:    200,
-				Message: fmt.Sprintf("successfully uploaded part %s", *result.ETag),
-			}
+			var resp *pb.UploadPartResponse
 
 			if err != nil {
 				resp = &pb.UploadPartResponse{
 					Code:    500,
 					Message: fmt.Sprintf("failed uploading part: %v", err),
+				}
+			} else {
+				resp = &pb.UploadPartResponse{
+					Code:    200,
+					Message: fmt.Sprintf("successfully uploaded part %s", *result.ETag),
 				}
 			}
 
