@@ -297,6 +297,8 @@ func TestUploadHandler_UploadMedia(t *testing.T) {
 }
 
 func TestUploadService_UploadInit(t *testing.T) {
+	metadata := make(map[string]*string)
+	metadata["test"] = aws.String("testt")
 	type fields struct {
 		s3Client *s3.S3
 	}
@@ -312,7 +314,94 @@ func TestUploadService_UploadInit(t *testing.T) {
 		want    *s3.CreateMultipartUploadOutput
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name:   "init upload",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				key:      aws.String("testfile.txt"),
+				bucket:   aws.String("testbucket"),
+				metadata: metadata,
+			},
+			wantErr: false,
+			want: &s3.CreateMultipartUploadOutput{
+				Bucket: aws.String("testbucket"),
+				Key:    aws.String("testfile.txt"),
+			},
+		},
+		{
+			name:   "init upload in folder",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				key:      aws.String("testfolder/testfile.txt"),
+				bucket:   aws.String("testbucket"),
+				metadata: metadata,
+			},
+			wantErr: false,
+			want: &s3.CreateMultipartUploadOutput{
+				Bucket: aws.String("testbucket"),
+				Key:    aws.String("testfolder/testfile.txt"),
+			},
+		},
+		{
+			name:   "init upload with missing key",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				key:      aws.String(""),
+				bucket:   aws.String("testbucket"),
+				metadata: metadata,
+			},
+			wantErr: true,
+		},
+		{
+			name:   "init upload with nil key",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				key:      nil,
+				bucket:   aws.String("testbucket"),
+				metadata: metadata,
+			},
+			wantErr: true,
+		},
+		{
+			name:   "init upload with missing bucket",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				key:      aws.String("testfile.txt"),
+				bucket:   aws.String(""),
+				metadata: metadata,
+			},
+			wantErr: true,
+		},
+		{
+			name:   "init upload with nil bucket",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				key:      aws.String("testfile.txt"),
+				bucket:   nil,
+				metadata: metadata,
+			},
+			wantErr: true,
+		},
+		{
+			name:   "init upload with empty metadata",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				key:      aws.String("testfile.txt"),
+				bucket:   aws.String("testbucket"),
+				metadata: aws.StringMap(make(map[string]string)),
+			},
+			wantErr: true,
+		},
+		{
+			name:   "init upload with nil metadata",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				key:      aws.String("testfile.txt"),
+				bucket:   aws.String("testbucket"),
+				metadata: nil,
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -324,7 +413,7 @@ func TestUploadService_UploadInit(t *testing.T) {
 				t.Errorf("UploadService.UploadInit() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if !reflect.DeepEqual(got, tt.want) && got.UploadId == nil {
 				t.Errorf("UploadService.UploadInit() = %v, want %v", got, tt.want)
 			}
 		})
@@ -332,6 +421,11 @@ func TestUploadService_UploadInit(t *testing.T) {
 }
 
 func TestUploadHandler_UploadInit(t *testing.T) {
+	metadata := make(map[string]string)
+	metadata["test"] = "testt"
+	uploadservice := UploadService{
+		s3Client: s3Client,
+	}
 	type fields struct {
 		UploadService UploadService
 	}
@@ -346,7 +440,92 @@ func TestUploadHandler_UploadInit(t *testing.T) {
 		want    *pb.UploadInitResponse
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name:   "UploadInit",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadInitRequest{
+					Key:      "testfile.txt",
+					Bucket:   "testbucket",
+					Metadata: metadata,
+				},
+			},
+			wantErr: false,
+			want: &pb.UploadInitResponse{
+				Key:    "testfile.txt",
+				Bucket: "testbucket",
+			},
+		},
+		{
+			name:   "UploadInit folder",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadInitRequest{
+					Key:      "testfolder/testfile.txt",
+					Bucket:   "testbucket",
+					Metadata: metadata,
+				},
+			},
+			wantErr: false,
+			want: &pb.UploadInitResponse{
+				Key:    "testfolder/testfile.txt",
+				Bucket: "testbucket",
+			},
+		},
+		{
+			name:   "UploadInit with empty key",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadInitRequest{
+					Key:      "",
+					Bucket:   "testbucket",
+					Metadata: metadata,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name:   "UploadInit with empty bucket",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadInitRequest{
+					Key:      "testfile.txt",
+					Bucket:   "",
+					Metadata: metadata,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name:   "UploadInit with empty metadata",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadInitRequest{
+					Key:      "testfile.txt",
+					Bucket:   "testbucket",
+					Metadata: make(map[string]string),
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name:   "UploadInit with nil metadata",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadInitRequest{
+					Key:      "testfile.txt",
+					Bucket:   "testbucket",
+					Metadata: nil,
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -358,7 +537,7 @@ func TestUploadHandler_UploadInit(t *testing.T) {
 				t.Errorf("UploadHandler.UploadInit() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if !reflect.DeepEqual(got, tt.want) && &got.UploadId == nil {
 				t.Errorf("UploadHandler.UploadInit() = %v, want %v", got, tt.want)
 			}
 		})
