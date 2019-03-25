@@ -51,7 +51,7 @@ func init() {
 	s3Client = s3.New(newSession)
 
 	lis = bufconn.Listen(bufSize)
-	grpcServer := grpc.NewServer(grpc.MaxRecvMsgSize(10000000))
+	grpcServer := grpc.NewServer(grpc.MaxRecvMsgSize(10 << 20))
 	server := &UploadHandler{UploadService: UploadService{s3Client: s3Client}}
 	pb.RegisterUploadServer(grpcServer, server)
 	go func() {
@@ -696,6 +696,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 	}
 }
 
+// TODO:
 func TestUploadHandler_UploadPart(t *testing.T) {
 	type fields struct {
 		UploadService UploadService
@@ -724,35 +725,146 @@ func TestUploadHandler_UploadPart(t *testing.T) {
 }
 
 func TestUploadService_UploadComplete(t *testing.T) {
+	metadata := make(map[string]*string)
+	metadata["test"] = aws.String("meta")
+	file := make([]byte, 50<<20)
+	rand.Read(file)
+	fileReader := bytes.NewReader(file)
+
 	type fields struct {
 		s3Client *s3.S3
 	}
 	type args struct {
-		uploadID *string
-		key      *string
-		bucket   *string
+		initKey 	 *string
+		initBucket *string
+		key      	 *string
+		bucket   	 *string
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		want    *s3.CompleteMultipartUploadOutput
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Upload Complete",
+		 	fields: fields{s3Client: s3Client},
+			args: args{
+				initKey: aws.String("file.txt"),
+				initBucket: aws.String("testbucket"),
+				key: aws.String("file.txt"),
+				bucket: aws.String("testbucket"),
+			},
+			wantErr: false,
+		},
+		{
+			name: "Upload Complete to folder",
+		 	fields: fields{s3Client: s3Client},
+			args: args{
+				initKey: aws.String("testfolder/file.txt"),
+				initBucket:  aws.String("testbucket"),
+				key: aws.String("testfolder/file.txt"),
+				bucket: aws.String("testbucket"),
+			},
+			wantErr: false,
+		},
+		{
+			name: "Upload Complete with empty key",
+		 	fields: fields{s3Client: s3Client},
+			args: args{
+				initKey: aws.String("file.txt"),
+				initBucket: aws.String("testbucket"),
+				key: aws.String(""),
+				bucket: aws.String("testbucket"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Upload Complete with nil key",
+		 	fields: fields{s3Client: s3Client},
+			args: args{
+				initKey: aws.String("file.txt"),
+				initBucket: aws.String("testbucket"),
+				key: nil,
+				bucket: aws.String("testbucket"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Upload Complete with key mismatch",
+		 	fields: fields{s3Client: s3Client},
+			args: args{
+				initKey: aws.String("file.txt"),
+				initBucket: aws.String("testbucket"),
+				key: aws.String("file1.txt"),
+				bucket: aws.String("testbucket"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Upload Complete with empty bucket",
+		 	fields: fields{s3Client: s3Client},
+			args: args{
+				initKey: aws.String("file.txt"),
+				initBucket: aws.String("testbucket"),
+				key: aws.String("file.txt"),
+				bucket: aws.String(""),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Upload Complete with nil bucket",
+		 	fields: fields{s3Client: s3Client},
+			args: args{
+				initKey: aws.String("file.txt"),
+				initBucket: aws.String("testbucket"),
+				key: aws.String("file.txt"),
+				bucket: nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "Upload Complete with bucket mismatch",
+		 	fields: fields{s3Client: s3Client},
+			args: args{
+				initKey: aws.String("file.txt"),
+				initBucket: aws.String("testbucket"),
+				key: aws.String("file1.txt"),
+				bucket: aws.String("testbucket1"),
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := UploadService{
 				s3Client: tt.fields.s3Client,
 			}
-			got, err := s.UploadComplete(tt.args.uploadID, tt.args.key, tt.args.bucket)
+
+			initOutput, err := s.UploadInit(tt.args.initKey, tt.args.initBucket, metadata)
+			if (err != nil) {
+				t.Errorf("UploadService.UploadInit() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			_, err = s.UploadPart(initOutput.UploadId,
+				tt.args.initKey,
+				tt.args.initBucket,
+				aws.Int64(1),
+				fileReader)
+
+			if (err != nil) {
+					t.Errorf("UploadService.UploadPart() error = %v, wantErr %v", err, tt.wantErr)
+					return
+			}
+
+			got, err := s.UploadComplete(initOutput.UploadId, tt.args.key, tt.args.bucket)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UploadService.UploadComplete() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("UploadService.UploadComplete() = %v, want %v", got, tt.want)
+			if ((got == nil) != tt.wantErr) {
+				t.Errorf("UploadService.UploadComplete() = %v", got)
 			}
 		})
 	}

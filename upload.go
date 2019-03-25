@@ -126,13 +126,11 @@ func (s UploadService) UploadComplete(uploadID *string, key *string, bucket *str
 
 	completedMultipartParts := make([]*s3.CompletedPart, len(parts.Parts))
 
-	for _, v := range parts.Parts {
-		completedPart := &s3.CompletedPart{
+	for i, v := range parts.Parts {
+		completedMultipartParts[i] = &s3.CompletedPart{
 			ETag:       v.ETag,
 			PartNumber: v.PartNumber,
 		}
-
-		completedMultipartParts = append(completedMultipartParts, completedPart)
 	}
 
 	completedMultipartUpload := &s3.CompletedMultipartUpload{
