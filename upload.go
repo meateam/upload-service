@@ -80,6 +80,10 @@ func (s UploadService) UploadInit(key *string, bucket *string, metadata map[stri
 		return nil, fmt.Errorf("bucket name is required")
 	}
 
+	if metadata == nil || len(metadata) == 0 {
+		return nil, fmt.Errorf("metadata is required")
+	}
+
 	input := &s3.CreateMultipartUploadInput{
 		Bucket:   bucket,
 		Key:      key,
