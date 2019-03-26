@@ -153,6 +153,17 @@ func TestUploadService_UploadFile(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name:   "upload nil file",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				key:      aws.String("testfile.txt"),
+				bucket:   aws.String("testbucket"),
+				file:     nil,
+				metadata: nil,
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -1017,6 +1028,14 @@ func TestUploadHandler_UploadComplete(t *testing.T) {
 }
 
 func TestUploadHandler_UploadMultipart(t *testing.T) {
+	// Init global values to use in tests.
+	file := make([]byte, 50<<20)
+	rand.Read(file)
+	metadata := make(map[string]string)
+	metadata["test"] = "testt"
+	uploadservice := UploadService{
+		s3Client: s3Client,
+	}
 	type fields struct {
 		UploadService UploadService
 	}
@@ -1031,7 +1050,130 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 		want    *pb.UploadMultipartResponse
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name:   "Upload Multipart",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadMultipartRequest{
+					Key:      "testfile.txt",
+					Bucket:   "testbucket",
+					File:     file,
+					Metadata: metadata,
+				},
+			},
+			wantErr: false,
+			want: &pb.UploadMultipartResponse{
+				Location: fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint),
+			},
+		},
+		{
+			name:   "Upload Multipart to folder",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadMultipartRequest{
+					Key:      "testfolder/testfile.txt",
+					Bucket:   "testbucket",
+					File:     file,
+					Metadata: metadata,
+				},
+			},
+			wantErr: false,
+			want: &pb.UploadMultipartResponse{
+				Location: fmt.Sprintf("%s/testbucket/testfolder/testfile.txt", s3Endpoint),
+			},
+		},
+		{
+			name:   "Upload Multipart with empty key",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadMultipartRequest{
+					Key:      "",
+					Bucket:   "testbucket",
+					File:     file,
+					Metadata: metadata,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name:   "Upload Multipart with empty bucket",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadMultipartRequest{
+					Key:      "testfile.txt",
+					Bucket:   "",
+					File:     file,
+					Metadata: metadata,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name:   "Upload Multipart with nil file",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadMultipartRequest{
+					Key:      "testfile.txt",
+					Bucket:   "testbucket",
+					File:     nil,
+					Metadata: metadata,
+				},
+			},
+			wantErr: false,
+			want: &pb.UploadMultipartResponse{
+				Location: fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint),
+			},
+		},
+		{
+			name:   "Upload Multipart with empty file",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadMultipartRequest{
+					Key:      "testfile.txt",
+					Bucket:   "testbucket",
+					File:     make([]byte, 0),
+					Metadata: metadata,
+				},
+			},
+			wantErr: false,
+			want: &pb.UploadMultipartResponse{
+				Location: fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint),
+			},
+		},
+		{
+			name:   "Upload Multipart with nil metadata",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadMultipartRequest{
+					Key:      "testfile.txt",
+					Bucket:   "testbucket",
+					File:     file,
+					Metadata: nil,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name:   "Upload Multipart with empty metadata",
+			fields: fields{UploadService: uploadservice},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.UploadMultipartRequest{
+					Key:      "testfile.txt",
+					Bucket:   "testbucket",
+					File:     file,
+					Metadata: make(map[string]string),
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
