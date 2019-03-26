@@ -66,7 +66,8 @@ func bufDialer(string, time.Duration) (net.Conn, error) {
 }
 
 func TestUploadService_UploadFile(t *testing.T) {
-
+	metadata := make(map[string]*string)
+	metadata["test"] = aws.String("testt")
 	type fields struct {
 		s3Client *s3.S3
 	}
@@ -103,7 +104,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 				key:      aws.String("testfolder/testfile.txt"),
 				bucket:   aws.String("testbucket"),
 				file:     bytes.NewReader([]byte("Hello, World!")),
-				metadata: nil,
+				metadata: metadata,
 			},
 			wantErr: false,
 			want:    aws.String(fmt.Sprintf("%s/testbucket/testfolder/testfile.txt", s3Endpoint)),
@@ -672,6 +673,58 @@ func TestUploadService_UploadPart(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name:   "upload part with nil body",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				initKey:    aws.String("partfile6.txt"),
+				initBucket: aws.String("testbucket"),
+				key:        aws.String("partfile6.txt"),
+				bucket:     aws.String("testbucket"),
+				partNumber: aws.Int64(1),
+				body:       nil,
+			},
+			wantErr: true,
+		},
+		{
+			name:   "upload part without part number",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				initKey:    aws.String("partfile8.txt"),
+				initBucket: aws.String("testbucket"),
+				key:        aws.String("partfile8.txt"),
+				bucket:     aws.String("testbucket"),
+				partNumber: nil,
+				body:       fileReader,
+			},
+			wantErr: true,
+		},
+		{
+			name:   "upload part with part number lower than 1",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				initKey:    aws.String("partfile7.txt"),
+				initBucket: aws.String("testbucket"),
+				key:        aws.String("partfile7.txt"),
+				bucket:     aws.String("testbucket"),
+				partNumber: aws.Int64(0),
+				body:       fileReader,
+			},
+			wantErr: true,
+		},
+		{
+			name:   "upload part with part number greater than 10000",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				initKey:    aws.String("partfile7.txt"),
+				initBucket: aws.String("testbucket"),
+				key:        aws.String("partfile7.txt"),
+				bucket:     aws.String("testbucket"),
+				partNumber: aws.Int64(10001),
+				body:       fileReader,
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -694,6 +747,34 @@ func TestUploadService_UploadPart(t *testing.T) {
 			}
 		})
 	}
+	t.Run("UploadPart - nil UploadID", func(t *testing.T) {
+		s := UploadService{
+			s3Client: s3Client,
+		}
+
+		got, err := s.UploadPart(nil, aws.String("testfile10.txt"), aws.String("testbucket"), aws.Int64(1), fileReader)
+		if err == nil {
+			t.Errorf("UploadService.UploadPart() error = %v, wantErr %v", err, true)
+			return
+		}
+		if (got == nil || got.ETag == nil || *got.ETag == "") && err == nil {
+			t.Errorf("UploadService.UploadPart() = %v", got)
+		}
+	})
+	t.Run("UploadPart - empty UploadID", func(t *testing.T) {
+		s := UploadService{
+			s3Client: s3Client,
+		}
+
+		got, err := s.UploadPart(aws.String(""), aws.String("testfile10.txt"), aws.String("testbucket"), aws.Int64(1), fileReader)
+		if err == nil {
+			t.Errorf("UploadService.UploadPart() error = %v, wantErr %v", err, true)
+			return
+		}
+		if (got == nil || got.ETag == nil || *got.ETag == "") && err == nil {
+			t.Errorf("UploadService.UploadPart() = %v", got)
+		}
+	})
 }
 
 // TODO:
@@ -930,6 +1011,40 @@ func TestUploadHandler_UploadComplete(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("UploadHandler.UploadComplete() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUploadHandler_UploadMultipart(t *testing.T) {
+	type fields struct {
+		UploadService UploadService
+	}
+	type args struct {
+		ctx     context.Context
+		request *pb.UploadMultipartRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *pb.UploadMultipartResponse
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := UploadHandler{
+				UploadService: tt.fields.UploadService,
+			}
+			got, err := h.UploadMultipart(tt.args.ctx, tt.args.request)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UploadHandler.UploadMultipart() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("UploadHandler.UploadMultipart() = %v, want %v", got, tt.want)
 			}
 		})
 	}
