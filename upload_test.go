@@ -556,12 +556,21 @@ func TestUploadHandler_UploadInit(t *testing.T) {
 			wantErr: true,
 		},
 	}
+
+	// Create connection to server
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithDialer(bufDialer), grpc.WithInsecure())
+	if err != nil {
+		t.Fatalf("Failed to dial bufnet: %v", err)
+	}
+	defer conn.Close()
+
+	// Create client
+	client := pb.NewUploadClient(conn)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := UploadHandler{
-				UploadService: tt.fields.UploadService,
-			}
-			got, err := h.UploadInit(tt.args.ctx, tt.args.request)
+			got, err := client.UploadInit(tt.args.ctx, tt.args.request)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UploadHandler.UploadInit() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -821,34 +830,6 @@ func TestUploadService_UploadPart(t *testing.T) {
 	})
 }
 
-// TODO:
-func TestUploadHandler_UploadPart(t *testing.T) {
-	type fields struct {
-		UploadService UploadService
-	}
-	type args struct {
-		stream pb.Upload_UploadPartServer
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := UploadHandler{
-				UploadService: tt.fields.UploadService,
-			}
-			if err := h.UploadPart(tt.args.stream); (err != nil) != tt.wantErr {
-				t.Errorf("UploadHandler.UploadPart() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
 func TestUploadService_UploadComplete(t *testing.T) {
 	metadata := make(map[string]*string)
 	metadata["test"] = aws.String("meta")
@@ -1039,66 +1020,25 @@ func TestUploadService_UploadComplete(t *testing.T) {
 	})
 }
 
-func TestUploadHandler_UploadComplete(t *testing.T) {
-	type fields struct {
-		UploadService UploadService
-	}
-	type args struct {
-		ctx     context.Context
-		request *pb.UploadCompleteRequest
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    *pb.UploadCompleteResponse
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := UploadHandler{
-				UploadService: tt.fields.UploadService,
-			}
-			got, err := h.UploadComplete(tt.args.ctx, tt.args.request)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("UploadHandler.UploadComplete() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("UploadHandler.UploadComplete() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestUploadHandler_UploadMultipart(t *testing.T) {
 	// Init global values to use in tests.
 	file := make([]byte, 50<<20)
 	rand.Read(file)
 	metadata := make(map[string]string)
 	metadata["test"] = "testt"
-	uploadservice := UploadService{
-		s3Client: s3Client,
-	}
-	type fields struct {
-		UploadService UploadService
-	}
+
 	type args struct {
 		ctx     context.Context
 		request *pb.UploadMultipartRequest
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		want    *pb.UploadMultipartResponse
 		wantErr bool
 	}{
 		{
-			name:   "Upload Multipart",
-			fields: fields{UploadService: uploadservice},
+			name: "Upload Multipart",
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMultipartRequest{
@@ -1114,8 +1054,7 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			},
 		},
 		{
-			name:   "Upload Multipart to folder",
-			fields: fields{UploadService: uploadservice},
+			name: "Upload Multipart to folder",
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMultipartRequest{
@@ -1131,8 +1070,7 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			},
 		},
 		{
-			name:   "Upload Multipart with empty key",
-			fields: fields{UploadService: uploadservice},
+			name: "Upload Multipart with empty key",
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMultipartRequest{
@@ -1145,8 +1083,7 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:   "Upload Multipart with empty bucket",
-			fields: fields{UploadService: uploadservice},
+			name: "Upload Multipart with empty bucket",
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMultipartRequest{
@@ -1159,8 +1096,7 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:   "Upload Multipart with nil file",
-			fields: fields{UploadService: uploadservice},
+			name: "Upload Multipart with nil file",
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMultipartRequest{
@@ -1176,8 +1112,7 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			},
 		},
 		{
-			name:   "Upload Multipart with empty file",
-			fields: fields{UploadService: uploadservice},
+			name: "Upload Multipart with empty file",
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMultipartRequest{
@@ -1193,8 +1128,7 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			},
 		},
 		{
-			name:   "Upload Multipart with nil metadata",
-			fields: fields{UploadService: uploadservice},
+			name: "Upload Multipart with nil metadata",
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMultipartRequest{
@@ -1207,8 +1141,7 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:   "Upload Multipart with empty metadata",
-			fields: fields{UploadService: uploadservice},
+			name: "Upload Multipart with empty metadata",
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMultipartRequest{
@@ -1221,12 +1154,21 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			wantErr: true,
 		},
 	}
+
+	// Create connection to server
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithDialer(bufDialer), grpc.WithInsecure())
+	if err != nil {
+		t.Fatalf("Failed to dial bufnet: %v", err)
+	}
+	defer conn.Close()
+
+	// Create client
+	client := pb.NewUploadClient(conn)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := UploadHandler{
-				UploadService: tt.fields.UploadService,
-			}
-			got, err := h.UploadMultipart(tt.args.ctx, tt.args.request)
+			got, err := client.UploadMultipart(tt.args.ctx, tt.args.request)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UploadHandler.UploadMultipart() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1301,6 +1243,7 @@ func TestUploadService_UploadAbort(t *testing.T) {
 	}
 }
 
+// TODO:
 func TestUploadHandler_UploadAbort(t *testing.T) {
 	type fields struct {
 		UploadService UploadService
@@ -1330,6 +1273,69 @@ func TestUploadHandler_UploadAbort(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("UploadHandler.UploadAbort() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// TODO:
+func TestUploadHandler_UploadPart(t *testing.T) {
+	type fields struct {
+		UploadService UploadService
+	}
+	type args struct {
+		stream pb.Upload_UploadPartServer
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := UploadHandler{
+				UploadService: tt.fields.UploadService,
+			}
+			if err := h.UploadPart(tt.args.stream); (err != nil) != tt.wantErr {
+				t.Errorf("UploadHandler.UploadPart() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+// TODO:
+func TestUploadHandler_UploadComplete(t *testing.T) {
+	type fields struct {
+		UploadService UploadService
+	}
+	type args struct {
+		ctx     context.Context
+		request *pb.UploadCompleteRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *pb.UploadCompleteResponse
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := UploadHandler{
+				UploadService: tt.fields.UploadService,
+			}
+			got, err := h.UploadComplete(tt.args.ctx, tt.args.request)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UploadHandler.UploadComplete() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("UploadHandler.UploadComplete() = %v, want %v", got, tt.want)
 			}
 		})
 	}
