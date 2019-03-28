@@ -1022,7 +1022,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 
 func TestUploadHandler_UploadMultipart(t *testing.T) {
 	// Init global values to use in tests.
-	file := make([]byte, 50<<20)
+	file := make([]byte, 5<<20)
 	rand.Read(file)
 	metadata := make(map[string]string)
 	metadata["test"] = "testt"
