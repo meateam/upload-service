@@ -76,7 +76,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 		key      *string
 		bucket   *string
 		metadata map[string]*string
-		ctx			 context.Context
+		ctx      context.Context
 	}
 
 	tests := []struct {
@@ -94,7 +94,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 				bucket:   aws.String("testbucket"),
 				file:     bytes.NewReader([]byte("Hello, World!")),
 				metadata: nil,
-				ctx: context.Background(),
+				ctx:      context.Background(),
 			},
 			wantErr: false,
 			want:    aws.String(fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint)),
@@ -107,7 +107,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 				bucket:   aws.String("testbucket"),
 				file:     bytes.NewReader([]byte("Hello, World!")),
 				metadata: metadata,
-				ctx: context.Background(),
+				ctx:      context.Background(),
 			},
 			wantErr: false,
 			want:    aws.String(fmt.Sprintf("%s/testbucket/testfolder/testfile.txt", s3Endpoint)),
@@ -120,7 +120,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 				bucket:   aws.String("testbucket"),
 				file:     bytes.NewReader([]byte("Hello, World!")),
 				metadata: nil,
-				ctx: context.Background(),
+				ctx:      context.Background(),
 			},
 			wantErr: true,
 		},
@@ -132,7 +132,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 				bucket:   aws.String(""),
 				file:     bytes.NewReader([]byte("Hello, World!")),
 				metadata: nil,
-				ctx: context.Background(),
+				ctx:      context.Background(),
 			},
 			wantErr: true,
 		},
@@ -144,7 +144,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 				bucket:   aws.String("testbucket"),
 				file:     bytes.NewReader([]byte("Hello, World!")),
 				metadata: nil,
-				ctx: context.Background(),
+				ctx:      context.Background(),
 			},
 			wantErr: true,
 		},
@@ -156,7 +156,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 				bucket:   nil,
 				file:     bytes.NewReader([]byte("Hello, World!")),
 				metadata: nil,
-				ctx: context.Background(),
+				ctx:      context.Background(),
 			},
 			wantErr: true,
 		},
@@ -168,7 +168,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 				bucket:   aws.String("testbucket"),
 				file:     nil,
 				metadata: nil,
-				ctx: context.Background(),
+				ctx:      context.Background(),
 			},
 			wantErr: true,
 		},
@@ -326,7 +326,7 @@ func TestUploadService_UploadInit(t *testing.T) {
 		key      *string
 		bucket   *string
 		metadata map[string]*string
-		ctx			 context.Context
+		ctx      context.Context
 	}
 	tests := []struct {
 		name    string
@@ -342,7 +342,7 @@ func TestUploadService_UploadInit(t *testing.T) {
 				key:      aws.String("testfile.txt"),
 				bucket:   aws.String("testbucket"),
 				metadata: metadata,
-				ctx: context.Background(),
+				ctx:      context.Background(),
 			},
 			wantErr: false,
 			want: &s3.CreateMultipartUploadOutput{
@@ -357,7 +357,7 @@ func TestUploadService_UploadInit(t *testing.T) {
 				key:      aws.String("testfolder/testfile.txt"),
 				bucket:   aws.String("testbucket"),
 				metadata: metadata,
-				ctx: context.Background(),
+				ctx:      context.Background(),
 			},
 			wantErr: false,
 			want: &s3.CreateMultipartUploadOutput{
@@ -372,7 +372,7 @@ func TestUploadService_UploadInit(t *testing.T) {
 				key:      aws.String(""),
 				bucket:   aws.String("testbucket"),
 				metadata: metadata,
-				ctx: context.Background(),
+				ctx:      context.Background(),
 			},
 			wantErr: true,
 		},
@@ -383,7 +383,7 @@ func TestUploadService_UploadInit(t *testing.T) {
 				key:      nil,
 				bucket:   aws.String("testbucket"),
 				metadata: metadata,
-				ctx: context.Background(),
+				ctx:      context.Background(),
 			},
 			wantErr: true,
 		},
@@ -394,7 +394,7 @@ func TestUploadService_UploadInit(t *testing.T) {
 				key:      aws.String("testfile.txt"),
 				bucket:   aws.String(""),
 				metadata: metadata,
-				ctx: context.Background(),
+				ctx:      context.Background(),
 			},
 			wantErr: true,
 		},
@@ -405,7 +405,7 @@ func TestUploadService_UploadInit(t *testing.T) {
 				key:      aws.String("testfile.txt"),
 				bucket:   nil,
 				metadata: metadata,
-				ctx: context.Background(),
+				ctx:      context.Background(),
 			},
 			wantErr: true,
 		},
@@ -416,7 +416,7 @@ func TestUploadService_UploadInit(t *testing.T) {
 				key:      aws.String("testfile.txt"),
 				bucket:   aws.String("testbucket"),
 				metadata: aws.StringMap(make(map[string]string)),
-				ctx: context.Background(),
+				ctx:      context.Background(),
 			},
 			wantErr: true,
 		},
@@ -427,7 +427,7 @@ func TestUploadService_UploadInit(t *testing.T) {
 				key:      aws.String("testfile.txt"),
 				bucket:   aws.String("testbucket"),
 				metadata: nil,
-				ctx: context.Background(),
+				ctx:      context.Background(),
 			},
 			wantErr: true,
 		},
@@ -590,7 +590,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 		bucket     *string
 		partNumber *int64
 		body       io.ReadSeeker
-		ctx				 context.Context
+		ctx        context.Context
 	}
 	tests := []struct {
 		name    string
@@ -608,7 +608,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 				bucket:     aws.String("testbucket"),
 				partNumber: aws.Int64(1),
 				body:       fileReader,
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: false,
 		},
@@ -622,7 +622,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 				bucket:     aws.String("testbucket"),
 				partNumber: aws.Int64(1),
 				body:       fileReader,
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: false,
 		},
@@ -636,7 +636,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 				bucket:     aws.String("testbucket"),
 				partNumber: aws.Int64(1),
 				body:       fileReader,
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: true,
 		},
@@ -650,7 +650,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 				bucket:     aws.String("testbucket"),
 				partNumber: aws.Int64(1),
 				body:       fileReader,
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: true,
 		},
@@ -664,7 +664,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 				bucket:     aws.String("testbucket"),
 				partNumber: aws.Int64(1),
 				body:       fileReader,
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: true,
 		},
@@ -678,7 +678,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 				bucket:     aws.String(""),
 				partNumber: aws.Int64(1),
 				body:       fileReader,
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: true,
 		},
@@ -692,7 +692,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 				bucket:     nil,
 				partNumber: aws.Int64(1),
 				body:       fileReader,
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: true,
 		},
@@ -706,7 +706,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 				bucket:     aws.String("testbucket1"),
 				partNumber: aws.Int64(1),
 				body:       fileReader,
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: true,
 		},
@@ -720,7 +720,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 				bucket:     aws.String("testbucket"),
 				partNumber: aws.Int64(1),
 				body:       nil,
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: true,
 		},
@@ -734,7 +734,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 				bucket:     aws.String("testbucket"),
 				partNumber: nil,
 				body:       fileReader,
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: true,
 		},
@@ -748,7 +748,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 				bucket:     aws.String("testbucket"),
 				partNumber: aws.Int64(0),
 				body:       fileReader,
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: true,
 		},
@@ -762,7 +762,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 				bucket:     aws.String("testbucket"),
 				partNumber: aws.Int64(10001),
 				body:       fileReader,
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: true,
 		},
@@ -864,7 +864,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 		initBucket *string
 		key        *string
 		bucket     *string
-		ctx				 context.Context
+		ctx        context.Context
 	}
 	tests := []struct {
 		name    string
@@ -880,7 +880,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 				initBucket: aws.String("testbucket"),
 				key:        aws.String("file.txt"),
 				bucket:     aws.String("testbucket"),
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: false,
 		},
@@ -892,7 +892,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 				initBucket: aws.String("testbucket"),
 				key:        aws.String("testfolder/file.txt"),
 				bucket:     aws.String("testbucket"),
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: false,
 		},
@@ -904,7 +904,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 				initBucket: aws.String("testbucket"),
 				key:        aws.String(""),
 				bucket:     aws.String("testbucket"),
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: true,
 		},
@@ -916,7 +916,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 				initBucket: aws.String("testbucket"),
 				key:        nil,
 				bucket:     aws.String("testbucket"),
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: true,
 		},
@@ -928,7 +928,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 				initBucket: aws.String("testbucket"),
 				key:        aws.String("file1.txt"),
 				bucket:     aws.String("testbucket"),
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: true,
 		},
@@ -940,7 +940,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 				initBucket: aws.String("testbucket"),
 				key:        aws.String("file.txt"),
 				bucket:     aws.String(""),
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: true,
 		},
@@ -952,7 +952,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 				initBucket: aws.String("testbucket"),
 				key:        aws.String("file.txt"),
 				bucket:     nil,
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: true,
 		},
@@ -964,7 +964,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 				initBucket: aws.String("testbucket"),
 				key:        aws.String("file1.txt"),
 				bucket:     aws.String("testbucket1"),
-				ctx: context.Background(),
+				ctx:        context.Background(),
 			},
 			wantErr: true,
 		},
@@ -1233,6 +1233,103 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("UploadHandler.UploadMultipart() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUploadService_UploadAbort(t *testing.T) {
+	metadata := make(map[string]*string)
+	metadata["test"] = aws.String("testt")
+	file := make([]byte, 50<<20)
+	rand.Read(file)
+	fileReader := bytes.NewReader(file)
+	type fields struct {
+		s3Client *s3.S3
+	}
+	type args struct {
+		ctx    aws.Context
+		key    *string
+		bucket *string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name:   "init upload",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				key:    aws.String("testfile.txt"),
+				bucket: aws.String("testbucket"),
+				ctx:    context.Background(),
+			},
+			wantErr: false,
+			want:    true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := UploadService{
+				s3Client: tt.fields.s3Client,
+			}
+
+			initOutput, err := s.UploadInit(tt.args.ctx, tt.args.key, tt.args.bucket, metadata)
+			if err != nil {
+				t.Errorf("UploadService.UploadInit() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			_, err = s.UploadPart(tt.args.ctx, initOutput.UploadId, tt.args.key, tt.args.bucket, aws.Int64(1), fileReader)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UploadService.UploadPart() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			got, err := s.UploadAbort(tt.args.ctx, initOutput.UploadId, tt.args.key, tt.args.bucket)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UploadService.UploadAbort() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("UploadService.UploadAbort() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUploadHandler_UploadAbort(t *testing.T) {
+	type fields struct {
+		UploadService UploadService
+	}
+	type args struct {
+		ctx     context.Context
+		request *pb.UploadAbortRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *pb.UploadAbortResponse
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := UploadHandler{
+				UploadService: tt.fields.UploadService,
+			}
+			got, err := h.UploadAbort(tt.args.ctx, tt.args.request)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UploadHandler.UploadAbort() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("UploadHandler.UploadAbort() = %v, want %v", got, tt.want)
 			}
 		})
 	}

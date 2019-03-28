@@ -265,20 +265,15 @@ func (s UploadService) UploadAbort(ctx aws.Context, uploadID *string, key *strin
 	if ctx == nil {
 		return false, fmt.Errorf("context is required")
 	}
-	
+
 	abortInput := &s3.AbortMultipartUploadInput{
-		Bucket: bucket,
-		Key: key,
+		Bucket:   bucket,
+		Key:      key,
 		UploadId: uploadID,
 	}
 
 	_, err := s.s3Client.AbortMultipartUploadWithContext(ctx, abortInput)
 	if err != nil {
-		return false, fmt.Errorf("failed aborting multipart upload: %v", err)
-	}
-
-	parts, err := s.ListUploadParts(ctx, uploadID, key, bucket)
-	if err != nil || parts == nil || len(parts.Parts) > 0 {
 		return false, fmt.Errorf("failed aborting multipart upload: %v", err)
 	}
 
@@ -415,4 +410,19 @@ func (h UploadHandler) UploadComplete(ctx context.Context, request *pb.UploadCom
 	}
 
 	return &pb.UploadCompleteResponse{Location: *result.Location}, nil
+}
+
+// UploadAbort is the request handler for aborting and freeing previously uploaded parts.
+func (h UploadHandler) UploadAbort(ctx context.Context, request *pb.UploadAbortRequest) (*pb.UploadAbortResponse, error) {
+	abortStatus, err := h.UploadService.UploadAbort(
+		ctx,
+		aws.String(request.GetUploadId()),
+		aws.String(request.GetKey()),
+		aws.String(request.GetBucket()))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.UploadAbortResponse{Status: abortStatus}, nil
 }

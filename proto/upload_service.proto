@@ -14,6 +14,7 @@ service Upload {
     rpc UploadInit(UploadInitRequest) returns (UploadInitResponse) {}
     rpc UploadPart(stream UploadPartRequest) returns (stream UploadPartResponse) {}
     rpc UploadComplete(UploadCompleteRequest) returns (UploadCompleteResponse) {}
+    rpc UploadAbort(UploadAbortRequest) returns (UploadAbortResponse) {}
 }
 
 // UploadMediaRequest is the request for media upload
@@ -123,4 +124,21 @@ message UploadCompleteResponse {
     // The location that the file was uploaded to
     string location = 1;
 
+}
+
+// UploadAbortRequest is the request for aborting resumable upload
+message UploadAbortRequest {
+    // Upload ID generated for resumable upload of a file
+    string uploadId = 1;
+
+    // File key to store in S3
+    string key = 2;
+
+    // The bucket to upload the file to
+    string bucket = 3;
+}
+
+// UploadAbortResponse is the response for aborting resumable upload
+message UploadAbortResponse {
+    bool status = 1;
 }
