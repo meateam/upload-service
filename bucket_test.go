@@ -102,6 +102,11 @@ func TestBucketService_CreateBucket(t *testing.T) {
 	}
 }
 func TestBucketService_BucketExists(t *testing.T) {
+	s := BucketService{
+		s3Client: s3Client,
+	}
+	s.CreateBucket(context.Background(), aws.String("testbucket"))
+
 	type fields struct {
 		s3Client *s3.S3
 	}
@@ -115,7 +120,33 @@ func TestBucketService_BucketExists(t *testing.T) {
 		args   args
 		want   bool
 	}{
-		// TODO: Add test cases.
+		{
+			name:   "Bucket Exists",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				ctx:    context.Background(),
+				bucket: aws.String("testbucket"),
+			},
+			want: true,
+		},
+		{
+			name:   "Bucket doesn't Exists",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				ctx:    context.Background(),
+				bucket: aws.String("testbucket2"),
+			},
+			want: false,
+		},
+		{
+			name:   "Bucket Exists",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				ctx:    context.Background(),
+				bucket: nil,
+			},
+			want: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
