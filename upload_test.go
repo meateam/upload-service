@@ -24,10 +24,7 @@ import (
 
 const bufSize = 1024 * 1024
 
-// Declaring global variables.
-var s3Endpoint string
-var newSession = session.Must(session.NewSession())
-var s3Client *s3.S3
+// Declaring global variable.
 var lis *bufconn.Listener
 
 func init() {
