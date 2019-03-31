@@ -18,6 +18,29 @@ type UploadService struct {
 	s3Client *s3.S3
 }
 
+// EnsureBucketExists Creates a bucket if it doesn't exist.
+func (s UploadService) EnsureBucketExists(ctx aws.Context, bucket *string) error {
+	if ctx == nil {
+		return fmt.Errorf("context is required")
+	}
+
+	bucketService := BucketService{s3Client: s.s3Client}
+	bucketExists := bucketService.BucketExists(ctx, bucket)
+
+	if bucketExists == false {
+		bucketExists, err := bucketService.CreateBucket(ctx, bucket)
+		if err != nil {
+			return fmt.Errorf("failed to create bucket %s: %v", *bucket, err)
+		}
+
+		if bucketExists == false {
+			return fmt.Errorf("failed to create bucket %s: bucket does not exist", *bucket)
+		}
+	}
+
+	return nil
+}
+
 // UploadFile uploads a file to the given bucket and key in S3.
 // If metadata is a non-nil map then it will be uploaded with the file.
 // Returns the file's location and an error if any occured.
@@ -38,18 +61,9 @@ func (s UploadService) UploadFile(ctx aws.Context, file io.Reader, key *string, 
 		return nil, fmt.Errorf("context is required")
 	}
 
-	bucketService := BucketService{s3Client: s.s3Client}
-	bucketExists := bucketService.BucketExists(ctx, bucket)
-
-	if bucketExists == false {
-		bucketExists, err := bucketService.CreateBucket(ctx, bucket)
-		if err != nil {
-			return nil, fmt.Errorf("failed to upload file to %s/%s: %v", *bucket, *key, err)
-		}
-
-		if bucketExists == false {
-			return nil, fmt.Errorf("failed to upload file to %s/%s: bucket %s does not exist", *bucket, *key, *bucket)
-		}
+	err := s.EnsureBucketExists(ctx, bucket)
+	if err != nil {
+		return nil, fmt.Errorf("failed to upload file to %s/%s: %v", *bucket, *key, err)
 	}
 
 	// Create an uploader with S3 client and custom options
@@ -96,6 +110,11 @@ func (s UploadService) UploadInit(ctx aws.Context, key *string, bucket *string, 
 		return nil, fmt.Errorf("context is required")
 	}
 
+	err := s.EnsureBucketExists(ctx, bucket)
+	if err != nil {
+		return nil, fmt.Errorf("failed to init upload to %s/%s: %v", *bucket, *key, err)
+	}
+
 	input := &s3.CreateMultipartUploadInput{
 		Bucket:   bucket,
 		Key:      key,
@@ -140,6 +159,11 @@ func (s UploadService) UploadPart(ctx aws.Context, uploadID *string, key *string
 		return nil, fmt.Errorf("context is required")
 	}
 
+	err := s.EnsureBucketExists(ctx, bucket)
+	if err != nil {
+		return nil, fmt.Errorf("failed to upload part to %s/%s: %v", *bucket, *key, err)
+	}
+
 	input := &s3.UploadPartInput{
 		Body:       body,
 		Bucket:     bucket,
@@ -174,6 +198,11 @@ func (s UploadService) ListUploadParts(ctx aws.Context, uploadID *string, key *s
 		return nil, fmt.Errorf("context is required")
 	}
 
+	err := s.EnsureBucketExists(ctx, bucket)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list upload %s parts at %s/%s: %v", *uploadID, *bucket, *key, err)
+	}
+
 	listPartsInput := &s3.ListPartsInput{
 		UploadId: uploadID,
 		Key:      key,
@@ -205,6 +234,11 @@ func (s UploadService) UploadComplete(ctx aws.Context, uploadID *string, key *st
 
 	if ctx == nil {
 		return nil, fmt.Errorf("context is required")
+	}
+
+	err := s.EnsureBucketExists(ctx, bucket)
+	if err != nil {
+		return nil, fmt.Errorf("failed to upload complete %s parts at %s/%s: %v", *uploadID, *bucket, *key, err)
 	}
 
 	parts, err := s.ListUploadParts(ctx, uploadID, key, bucket)
@@ -266,13 +300,18 @@ func (s UploadService) UploadAbort(ctx aws.Context, uploadID *string, key *strin
 		return false, fmt.Errorf("context is required")
 	}
 
+	err := s.EnsureBucketExists(ctx, bucket)
+	if err != nil {
+		return false, fmt.Errorf("failed to list upload %s parts at %s/%s: %v", *uploadID, *bucket, *key, err)
+	}
+
 	abortInput := &s3.AbortMultipartUploadInput{
 		Bucket:   bucket,
 		Key:      key,
 		UploadId: uploadID,
 	}
 
-	_, err := s.s3Client.AbortMultipartUploadWithContext(ctx, abortInput)
+	_, err = s.s3Client.AbortMultipartUploadWithContext(ctx, abortInput)
 	if err != nil {
 		return false, fmt.Errorf("failed aborting multipart upload: %v", err)
 	}
