@@ -32,7 +32,7 @@ message UploadMediaRequest {
 // UploadMediaResponse is the response for media upload
 message UploadMediaResponse {
     // The location that the file was uploaded to
-    string output = 1;
+    string location = 1;
 }
 
 // UploadMultipartRequest is the request for multipart upload
