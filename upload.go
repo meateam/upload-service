@@ -327,7 +327,7 @@ type UploadHandler struct {
 // UploadMedia is the request handler for file upload, it is responsible for getting the file
 // from the request's body and uploading it to the bucket of the user who uploaded it
 func (h UploadHandler) UploadMedia(ctx context.Context, request *pb.UploadMediaRequest) (*pb.UploadMediaResponse, error) {
-	output, err := h.UploadFile(ctx,
+	location, err := h.UploadFile(ctx,
 		bytes.NewReader(request.GetFile()),
 		aws.String(request.GetKey()),
 		aws.String(request.GetBucket()),
@@ -337,7 +337,7 @@ func (h UploadHandler) UploadMedia(ctx context.Context, request *pb.UploadMediaR
 		return nil, err
 	}
 
-	return &pb.UploadMediaResponse{Output: *output}, nil
+	return &pb.UploadMediaResponse{Location: *location}, nil
 }
 
 // UploadMultipart is the request handler for file upload, it is responsible for getting the file
