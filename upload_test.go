@@ -224,7 +224,7 @@ func TestUploadHandler_UploadMedia(t *testing.T) {
 			},
 			wantErr: false,
 			want: &pb.UploadMediaResponse{
-				Output: fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint),
+				Location: fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint),
 			},
 		},
 		{
@@ -266,7 +266,7 @@ func TestUploadHandler_UploadMedia(t *testing.T) {
 			},
 			wantErr: false,
 			want: &pb.UploadMediaResponse{
-				Output: fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint),
+				Location: fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint),
 			},
 		},
 		{
@@ -282,7 +282,7 @@ func TestUploadHandler_UploadMedia(t *testing.T) {
 			},
 			wantErr: false,
 			want: &pb.UploadMediaResponse{
-				Output: fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint),
+				Location: fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint),
 			},
 		},
 	}
