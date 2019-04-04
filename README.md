@@ -1,5 +1,8 @@
 # Upload-Service
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/meateam/upload-service)](https://goreportcard.com/report/github.com/meateam/upload-service)
+[![GoDoc](https://godoc.org/github.com/meateam/upload-service?status.svg)](https://godoc.org/github.com/meateam/upload-service)
+
 S3 file Upload Service
 
 ## Compile proto
