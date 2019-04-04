@@ -37,9 +37,8 @@ func init() {
 	newSession = session.New(s3Config)
 	s3Client = s3.New(newSession)
 
-	if err := emptyAndDeleteBucket("testbucket"); err != nil {
-		log.Fatalf("Exited with error: %v", err)
-	}
+	emptyAndDeleteBucket("testbucket")
+	emptyAndDeleteBucket("testbucket1")
 }
 
 func TestBucketService_CreateBucket(t *testing.T) {
@@ -171,7 +170,7 @@ func emptyAndDeleteBucket(bucket string) error {
 		//Requesting for batch of objects from s3 bucket
 		objects, err := s3Client.ListObjects(params)
 		if err != nil {
-			return err
+			break
 		}
 		//Checks if the bucket is already empty
 		if len((*objects).Contents) == 0 {
@@ -207,9 +206,6 @@ func emptyAndDeleteBucket(bucket string) error {
 		}
 	}
 	log.Print("Emptied S3 bucket : ", bucket)
-	_, err := s3Client.DeleteBucket(&s3.DeleteBucketInput{Bucket: aws.String(bucket)})
-	if err != nil {
-		return err
-	}
+	s3Client.DeleteBucket(&s3.DeleteBucketInput{Bucket: aws.String(bucket)})
 	return nil
 }
