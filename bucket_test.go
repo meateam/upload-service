@@ -39,6 +39,8 @@ func init() {
 	// Init real client.
 	newSession = session.New(s3Config)
 	s3Client = s3.New(newSession)
+
+	s3Client.DeleteBucket(&s3.DeleteBucketInput{Bucket: aws.String("testbucket")})
 }
 
 func TestBucketService_CreateBucket(t *testing.T) {
