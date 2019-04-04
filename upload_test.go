@@ -56,6 +56,8 @@ func init() {
 			log.Fatalf("Server exited with error: %v", err)
 		}
 	}()
+	emptyAndDeleteBucket("testbucket")
+	emptyAndDeleteBucket("testbucket1")
 }
 
 func bufDialer(string, time.Duration) (net.Conn, error) {
