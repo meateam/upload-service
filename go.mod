@@ -1,4 +1,4 @@
-module upload-service
+module github.com/meateam/upload-service
 
 go 1.12
 
