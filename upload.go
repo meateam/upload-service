@@ -44,7 +44,7 @@ func (s UploadService) EnsureBucketExists(ctx aws.Context, bucket *string) error
 // UploadFile uploads a file to the given bucket and key in S3.
 // If metadata is a non-nil map then it will be uploaded with the file.
 // Returns the file's location and an error if any occured.
-func (s UploadService) UploadFile(ctx aws.Context, file io.Reader, key *string, bucket *string, metadata map[string]*string) (*string, error) {
+func (s UploadService) UploadFile(ctx aws.Context, file io.Reader, key *string, bucket *string, contentType *string, metadata map[string]*string) (*string, error) {
 	if file == nil {
 		return nil, fmt.Errorf("file is required")
 	}
@@ -72,9 +72,10 @@ func (s UploadService) UploadFile(ctx aws.Context, file io.Reader, key *string, 
 	})
 
 	input := &s3manager.UploadInput{
-		Bucket: bucket,
-		Key:    key,
-		Body:   file,
+		Bucket:      bucket,
+		Key:         key,
+		Body:        file,
+		ContentType: contentType,
 	}
 
 	if metadata != nil {
@@ -93,7 +94,7 @@ func (s UploadService) UploadFile(ctx aws.Context, file io.Reader, key *string, 
 
 // UploadInit initiates a multipart upload to the given bucket and key in S3 with metadata.
 // File metadata is required for multipart upload.
-func (s UploadService) UploadInit(ctx aws.Context, key *string, bucket *string, metadata map[string]*string) (*s3.CreateMultipartUploadOutput, error) {
+func (s UploadService) UploadInit(ctx aws.Context, key *string, bucket *string, contentType *string, metadata map[string]*string) (*s3.CreateMultipartUploadOutput, error) {
 	if key == nil || *key == "" {
 		return nil, fmt.Errorf("key is required")
 	}
@@ -116,9 +117,10 @@ func (s UploadService) UploadInit(ctx aws.Context, key *string, bucket *string, 
 	}
 
 	input := &s3.CreateMultipartUploadInput{
-		Bucket:   bucket,
-		Key:      key,
-		Metadata: metadata,
+		Bucket:      bucket,
+		Key:         key,
+		Metadata:    metadata,
+		ContentType: contentType,
 	}
 
 	result, err := s.s3Client.CreateMultipartUploadWithContext(ctx, input)
@@ -331,6 +333,7 @@ func (h UploadHandler) UploadMedia(ctx context.Context, request *pb.UploadMediaR
 		bytes.NewReader(request.GetFile()),
 		aws.String(request.GetKey()),
 		aws.String(request.GetBucket()),
+		aws.String(request.GetContentType()),
 		nil)
 
 	if err != nil {
@@ -352,6 +355,7 @@ func (h UploadHandler) UploadMultipart(ctx context.Context, request *pb.UploadMu
 		bytes.NewReader(request.GetFile()),
 		aws.String(request.GetKey()),
 		aws.String(request.GetBucket()),
+		aws.String(request.GetContentType()),
 		aws.StringMap(request.GetMetadata()))
 
 	if err != nil {
@@ -367,6 +371,7 @@ func (h UploadHandler) UploadInit(ctx context.Context, request *pb.UploadInitReq
 		ctx,
 		aws.String(request.GetKey()),
 		aws.String(request.GetBucket()),
+		aws.String(request.GetContentType()),
 		aws.StringMap(request.GetMetadata()))
 
 	if err != nil {
