@@ -71,11 +71,12 @@ func TestUploadService_UploadFile(t *testing.T) {
 		s3Client *s3.S3
 	}
 	type args struct {
-		file     io.Reader
-		key      *string
-		bucket   *string
-		metadata map[string]*string
-		ctx      context.Context
+		file        io.Reader
+		key         *string
+		bucket      *string
+		contentType *string
+		metadata    map[string]*string
+		ctx         context.Context
 	}
 
 	tests := []struct {
@@ -89,11 +90,12 @@ func TestUploadService_UploadFile(t *testing.T) {
 			name:   "upload text file",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:      aws.String("testfile.txt"),
-				bucket:   aws.String("testbucket"),
-				file:     bytes.NewReader([]byte("Hello, World!")),
-				metadata: nil,
-				ctx:      context.Background(),
+				key:         aws.String("testfile.txt"),
+				bucket:      aws.String("testbucket"),
+				file:        bytes.NewReader([]byte("Hello, World!")),
+				contentType: aws.String("text/plain"),
+				metadata:    nil,
+				ctx:         context.Background(),
 			},
 			wantErr: false,
 			want:    aws.String(fmt.Sprintf("%s/testbucket/testfile.txt", s3Endpoint)),
@@ -102,11 +104,12 @@ func TestUploadService_UploadFile(t *testing.T) {
 			name:   "upload text file in a folder",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:      aws.String("testfolder/testfile.txt"),
-				bucket:   aws.String("testbucket"),
-				file:     bytes.NewReader([]byte("Hello, World!")),
-				metadata: metadata,
-				ctx:      context.Background(),
+				key:         aws.String("testfolder/testfile.txt"),
+				bucket:      aws.String("testbucket"),
+				file:        bytes.NewReader([]byte("Hello, World!")),
+				contentType: aws.String("text/plain"),
+				metadata:    metadata,
+				ctx:         context.Background(),
 			},
 			wantErr: false,
 			want:    aws.String(fmt.Sprintf("%s/testbucket/testfolder/testfile.txt", s3Endpoint)),
@@ -115,11 +118,12 @@ func TestUploadService_UploadFile(t *testing.T) {
 			name:   "upload text file with empty key",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:      aws.String(""),
-				bucket:   aws.String("testbucket"),
-				file:     bytes.NewReader([]byte("Hello, World!")),
-				metadata: nil,
-				ctx:      context.Background(),
+				key:         aws.String(""),
+				bucket:      aws.String("testbucket"),
+				file:        bytes.NewReader([]byte("Hello, World!")),
+				contentType: aws.String("text/plain"),
+				metadata:    nil,
+				ctx:         context.Background(),
 			},
 			wantErr: true,
 		},
@@ -127,11 +131,12 @@ func TestUploadService_UploadFile(t *testing.T) {
 			name:   "upload text file with empty bucket",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:      aws.String("testfile.txt"),
-				bucket:   aws.String(""),
-				file:     bytes.NewReader([]byte("Hello, World!")),
-				metadata: nil,
-				ctx:      context.Background(),
+				key:         aws.String("testfile.txt"),
+				bucket:      aws.String(""),
+				file:        bytes.NewReader([]byte("Hello, World!")),
+				contentType: aws.String("text/plain"),
+				metadata:    nil,
+				ctx:         context.Background(),
 			},
 			wantErr: true,
 		},
@@ -139,11 +144,12 @@ func TestUploadService_UploadFile(t *testing.T) {
 			name:   "upload text file with nil key",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:      nil,
-				bucket:   aws.String("testbucket"),
-				file:     bytes.NewReader([]byte("Hello, World!")),
-				metadata: nil,
-				ctx:      context.Background(),
+				key:         nil,
+				bucket:      aws.String("testbucket"),
+				file:        bytes.NewReader([]byte("Hello, World!")),
+				contentType: aws.String("text/plain"),
+				metadata:    nil,
+				ctx:         context.Background(),
 			},
 			wantErr: true,
 		},
@@ -151,11 +157,12 @@ func TestUploadService_UploadFile(t *testing.T) {
 			name:   "upload text file with nil bucket",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:      aws.String("testfile.txt"),
-				bucket:   nil,
-				file:     bytes.NewReader([]byte("Hello, World!")),
-				metadata: nil,
-				ctx:      context.Background(),
+				key:         aws.String("testfile.txt"),
+				bucket:      nil,
+				file:        bytes.NewReader([]byte("Hello, World!")),
+				contentType: aws.String("text/plain"),
+				metadata:    nil,
+				ctx:         context.Background(),
 			},
 			wantErr: true,
 		},
@@ -163,11 +170,12 @@ func TestUploadService_UploadFile(t *testing.T) {
 			name:   "upload nil file",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:      aws.String("testfile.txt"),
-				bucket:   aws.String("testbucket"),
-				file:     nil,
-				metadata: nil,
-				ctx:      context.Background(),
+				key:         aws.String("testfile.txt"),
+				bucket:      aws.String("testbucket"),
+				contentType: aws.String("text/plain"),
+				file:        nil,
+				metadata:    nil,
+				ctx:         context.Background(),
 			},
 			wantErr: true,
 		},
@@ -179,7 +187,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 				s3Client: tt.fields.s3Client,
 			}
 
-			got, err := s.UploadFile(tt.args.ctx, tt.args.file, tt.args.key, tt.args.bucket, tt.args.metadata)
+			got, err := s.UploadFile(tt.args.ctx, tt.args.file, tt.args.key, tt.args.bucket, tt.args.contentType, tt.args.metadata)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UploadService.UploadFile() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -219,9 +227,10 @@ func TestUploadHandler_UploadMedia(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMediaRequest{
-					Key:    "testfile.txt",
-					Bucket: "testbucket",
-					File:   []byte("Hello, World!"),
+					Key:         "testfile.txt",
+					ContentType: "text/plain",
+					Bucket:      "testbucket",
+					File:        []byte("Hello, World!"),
 				},
 			},
 			wantErr: false,
@@ -235,9 +244,10 @@ func TestUploadHandler_UploadMedia(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMediaRequest{
-					Key:    "",
-					Bucket: "testbucket",
-					File:   []byte("Hello, World!"),
+					Key:         "",
+					ContentType: "text/plain",
+					Bucket:      "testbucket",
+					File:        []byte("Hello, World!"),
 				},
 			},
 			wantErr: true,
@@ -248,9 +258,10 @@ func TestUploadHandler_UploadMedia(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMediaRequest{
-					Key:    "testfile.txt",
-					Bucket: "",
-					File:   []byte("Hello, World!"),
+					Key:         "testfile.txt",
+					ContentType: "text/plain",
+					Bucket:      "",
+					File:        []byte("Hello, World!"),
 				},
 			},
 			wantErr: true,
@@ -261,9 +272,10 @@ func TestUploadHandler_UploadMedia(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMediaRequest{
-					Key:    "testfile.txt",
-					Bucket: "testbucket",
-					File:   nil,
+					Key:         "testfile.txt",
+					ContentType: "text/plain",
+					Bucket:      "testbucket",
+					File:        nil,
 				},
 			},
 			wantErr: false,
@@ -277,9 +289,10 @@ func TestUploadHandler_UploadMedia(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMediaRequest{
-					Key:    "testfile.txt",
-					Bucket: "testbucket",
-					File:   hugefile,
+					Key:         "testfile.txt",
+					ContentType: "text/plain",
+					Bucket:      "testbucket",
+					File:        hugefile,
 				},
 			},
 			wantErr: false,
@@ -322,10 +335,11 @@ func TestUploadService_UploadInit(t *testing.T) {
 		s3Client *s3.S3
 	}
 	type args struct {
-		key      *string
-		bucket   *string
-		metadata map[string]*string
-		ctx      context.Context
+		key         *string
+		bucket      *string
+		contentType *string
+		metadata    map[string]*string
+		ctx         context.Context
 	}
 	tests := []struct {
 		name    string
@@ -338,10 +352,11 @@ func TestUploadService_UploadInit(t *testing.T) {
 			name:   "init upload",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:      aws.String("testfile.txt"),
-				bucket:   aws.String("testbucket"),
-				metadata: metadata,
-				ctx:      context.Background(),
+				key:         aws.String("testfile.txt"),
+				bucket:      aws.String("testbucket"),
+				contentType: aws.String("text/plain"),
+				metadata:    metadata,
+				ctx:         context.Background(),
 			},
 			wantErr: false,
 			want: &s3.CreateMultipartUploadOutput{
@@ -353,10 +368,11 @@ func TestUploadService_UploadInit(t *testing.T) {
 			name:   "init upload in folder",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:      aws.String("testfolder/testfile.txt"),
-				bucket:   aws.String("testbucket"),
-				metadata: metadata,
-				ctx:      context.Background(),
+				key:         aws.String("testfolder/testfile.txt"),
+				contentType: aws.String("text/plain"),
+				bucket:      aws.String("testbucket"),
+				metadata:    metadata,
+				ctx:         context.Background(),
 			},
 			wantErr: false,
 			want: &s3.CreateMultipartUploadOutput{
@@ -368,10 +384,11 @@ func TestUploadService_UploadInit(t *testing.T) {
 			name:   "init upload with missing key",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:      aws.String(""),
-				bucket:   aws.String("testbucket"),
-				metadata: metadata,
-				ctx:      context.Background(),
+				key:         aws.String(""),
+				bucket:      aws.String("testbucket"),
+				contentType: aws.String("text/plain"),
+				metadata:    metadata,
+				ctx:         context.Background(),
 			},
 			wantErr: true,
 		},
@@ -379,10 +396,11 @@ func TestUploadService_UploadInit(t *testing.T) {
 			name:   "init upload with nil key",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:      nil,
-				bucket:   aws.String("testbucket"),
-				metadata: metadata,
-				ctx:      context.Background(),
+				key:         nil,
+				bucket:      aws.String("testbucket"),
+				contentType: aws.String("text/plain"),
+				metadata:    metadata,
+				ctx:         context.Background(),
 			},
 			wantErr: true,
 		},
@@ -390,10 +408,11 @@ func TestUploadService_UploadInit(t *testing.T) {
 			name:   "init upload with missing bucket",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:      aws.String("testfile.txt"),
-				bucket:   aws.String(""),
-				metadata: metadata,
-				ctx:      context.Background(),
+				key:         aws.String("testfile.txt"),
+				bucket:      aws.String(""),
+				contentType: aws.String("text/plain"),
+				metadata:    metadata,
+				ctx:         context.Background(),
 			},
 			wantErr: true,
 		},
@@ -401,10 +420,11 @@ func TestUploadService_UploadInit(t *testing.T) {
 			name:   "init upload with nil bucket",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:      aws.String("testfile.txt"),
-				bucket:   nil,
-				metadata: metadata,
-				ctx:      context.Background(),
+				key:         aws.String("testfile.txt"),
+				bucket:      nil,
+				contentType: aws.String("text/plain"),
+				metadata:    metadata,
+				ctx:         context.Background(),
 			},
 			wantErr: true,
 		},
@@ -412,10 +432,11 @@ func TestUploadService_UploadInit(t *testing.T) {
 			name:   "init upload with empty metadata",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:      aws.String("testfile.txt"),
-				bucket:   aws.String("testbucket"),
-				metadata: aws.StringMap(make(map[string]string)),
-				ctx:      context.Background(),
+				key:         aws.String("testfile.txt"),
+				bucket:      aws.String("testbucket"),
+				contentType: aws.String("text/plain"),
+				metadata:    aws.StringMap(make(map[string]string)),
+				ctx:         context.Background(),
 			},
 			wantErr: true,
 		},
@@ -423,10 +444,11 @@ func TestUploadService_UploadInit(t *testing.T) {
 			name:   "init upload with nil metadata",
 			fields: fields{s3Client: s3Client},
 			args: args{
-				key:      aws.String("testfile.txt"),
-				bucket:   aws.String("testbucket"),
-				metadata: nil,
-				ctx:      context.Background(),
+				key:         aws.String("testfile.txt"),
+				bucket:      aws.String("testbucket"),
+				contentType: aws.String("text/plain"),
+				metadata:    nil,
+				ctx:         context.Background(),
 			},
 			wantErr: true,
 		},
@@ -436,7 +458,7 @@ func TestUploadService_UploadInit(t *testing.T) {
 			s := UploadService{
 				s3Client: tt.fields.s3Client,
 			}
-			got, err := s.UploadInit(tt.args.ctx, tt.args.key, tt.args.bucket, tt.args.metadata)
+			got, err := s.UploadInit(tt.args.ctx, tt.args.key, tt.args.bucket, tt.args.contentType, tt.args.metadata)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UploadService.UploadInit() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -474,9 +496,10 @@ func TestUploadHandler_UploadInit(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadInitRequest{
-					Key:      "testfile.txt",
-					Bucket:   "testbucket",
-					Metadata: metadata,
+					Key:         "testfile.txt",
+					ContentType: "text/plain",
+					Bucket:      "testbucket",
+					Metadata:    metadata,
 				},
 			},
 			wantErr: false,
@@ -491,9 +514,10 @@ func TestUploadHandler_UploadInit(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadInitRequest{
-					Key:      "testfolder/testfile.txt",
-					Bucket:   "testbucket",
-					Metadata: metadata,
+					Key:         "testfolder/testfile.txt",
+					ContentType: "text/plain",
+					Bucket:      "testbucket",
+					Metadata:    metadata,
 				},
 			},
 			wantErr: false,
@@ -508,9 +532,10 @@ func TestUploadHandler_UploadInit(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadInitRequest{
-					Key:      "",
-					Bucket:   "testbucket",
-					Metadata: metadata,
+					Key:         "",
+					ContentType: "text/plain",
+					Bucket:      "testbucket",
+					Metadata:    metadata,
 				},
 			},
 			wantErr: true,
@@ -521,9 +546,10 @@ func TestUploadHandler_UploadInit(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadInitRequest{
-					Key:      "testfile.txt",
-					Bucket:   "",
-					Metadata: metadata,
+					ContentType: "text/plain",
+					Key:         "testfile.txt",
+					Bucket:      "",
+					Metadata:    metadata,
 				},
 			},
 			wantErr: true,
@@ -534,9 +560,10 @@ func TestUploadHandler_UploadInit(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadInitRequest{
-					Key:      "testfile.txt",
-					Bucket:   "testbucket",
-					Metadata: make(map[string]string),
+					ContentType: "text/plain",
+					Key:         "testfile.txt",
+					Bucket:      "testbucket",
+					Metadata:    make(map[string]string),
 				},
 			},
 			wantErr: true,
@@ -547,9 +574,10 @@ func TestUploadHandler_UploadInit(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadInitRequest{
-					Key:      "testfile.txt",
-					Bucket:   "testbucket",
-					Metadata: nil,
+					ContentType: "text/plain",
+					Key:         "testfile.txt",
+					Bucket:      "testbucket",
+					Metadata:    nil,
 				},
 			},
 			wantErr: true,
@@ -781,7 +809,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 				s3Client: tt.fields.s3Client,
 			}
 
-			initOutput, err := s.UploadInit(tt.args.ctx, tt.args.initKey, tt.args.initBucket, metadata)
+			initOutput, err := s.UploadInit(tt.args.ctx, tt.args.initKey, tt.args.initBucket, aws.String("text/plain"), metadata)
 			if err != nil {
 				t.Errorf("UploadService.UploadInit() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -955,7 +983,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 				s3Client: tt.fields.s3Client,
 			}
 
-			initOutput, err := s.UploadInit(tt.args.ctx, tt.args.initKey, tt.args.initBucket, metadata)
+			initOutput, err := s.UploadInit(tt.args.ctx, tt.args.initKey, tt.args.initBucket, aws.String("text/plain"), metadata)
 			if err != nil {
 				t.Errorf("UploadService.UploadInit() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1041,10 +1069,11 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMultipartRequest{
-					Key:      "testfile.txt",
-					Bucket:   "testbucket",
-					File:     file,
-					Metadata: metadata,
+					Key:         "testfile.txt",
+					Bucket:      "testbucket",
+					ContentType: "text/plain",
+					File:        file,
+					Metadata:    metadata,
 				},
 			},
 			wantErr: false,
@@ -1057,10 +1086,11 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMultipartRequest{
-					Key:      "testfolder/testfile.txt",
-					Bucket:   "testbucket",
-					File:     file,
-					Metadata: metadata,
+					Key:         "testfolder/testfile.txt",
+					ContentType: "text/plain",
+					Bucket:      "testbucket",
+					File:        file,
+					Metadata:    metadata,
 				},
 			},
 			wantErr: false,
@@ -1073,10 +1103,11 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMultipartRequest{
-					Key:      "",
-					Bucket:   "testbucket",
-					File:     file,
-					Metadata: metadata,
+					Key:         "",
+					ContentType: "text/plain",
+					Bucket:      "testbucket",
+					File:        file,
+					Metadata:    metadata,
 				},
 			},
 			wantErr: true,
@@ -1086,10 +1117,11 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMultipartRequest{
-					Key:      "testfile.txt",
-					Bucket:   "",
-					File:     file,
-					Metadata: metadata,
+					ContentType: "text/plain",
+					Key:         "testfile.txt",
+					Bucket:      "",
+					File:        file,
+					Metadata:    metadata,
 				},
 			},
 			wantErr: true,
@@ -1099,10 +1131,11 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMultipartRequest{
-					Key:      "testfile.txt",
-					Bucket:   "testbucket",
-					File:     nil,
-					Metadata: metadata,
+					ContentType: "text/plain",
+					Key:         "testfile.txt",
+					Bucket:      "testbucket",
+					File:        nil,
+					Metadata:    metadata,
 				},
 			},
 			wantErr: false,
@@ -1115,10 +1148,11 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMultipartRequest{
-					Key:      "testfile.txt",
-					Bucket:   "testbucket",
-					File:     make([]byte, 0),
-					Metadata: metadata,
+					ContentType: "text/plain",
+					Key:         "testfile.txt",
+					Bucket:      "testbucket",
+					File:        make([]byte, 0),
+					Metadata:    metadata,
 				},
 			},
 			wantErr: false,
@@ -1131,10 +1165,11 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMultipartRequest{
-					Key:      "testfile.txt",
-					Bucket:   "testbucket",
-					File:     file,
-					Metadata: nil,
+					Key:         "testfile.txt",
+					ContentType: "text/plain",
+					Bucket:      "testbucket",
+					File:        file,
+					Metadata:    nil,
 				},
 			},
 			wantErr: true,
@@ -1144,10 +1179,11 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.UploadMultipartRequest{
-					Key:      "testfile.txt",
-					Bucket:   "testbucket",
-					File:     file,
-					Metadata: make(map[string]string),
+					Key:         "testfile.txt",
+					ContentType: "text/plain",
+					Bucket:      "testbucket",
+					File:        file,
+					Metadata:    make(map[string]string),
 				},
 			},
 			wantErr: true,
@@ -1218,7 +1254,7 @@ func TestUploadService_UploadAbort(t *testing.T) {
 				s3Client: tt.fields.s3Client,
 			}
 
-			initOutput, err := s.UploadInit(tt.args.ctx, tt.args.key, tt.args.bucket, metadata)
+			initOutput, err := s.UploadInit(tt.args.ctx, tt.args.key, tt.args.bucket, aws.String("text/plain"), metadata)
 			if err != nil {
 				t.Errorf("UploadService.UploadInit() error = %v, wantErr %v", err, tt.wantErr)
 				return
