@@ -4,7 +4,7 @@ import (
 	"log"
 	"net"
 	"os"
-	pb "upload-service/proto"
+	pb "github.com/meateam/upload-service/proto"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
