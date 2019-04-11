@@ -103,10 +103,6 @@ func (s UploadService) UploadInit(ctx aws.Context, key *string, bucket *string, 
 		return nil, fmt.Errorf("bucket name is required")
 	}
 
-	if metadata == nil || len(metadata) == 0 {
-		return nil, fmt.Errorf("metadata is required")
-	}
-
 	if ctx == nil {
 		return nil, fmt.Errorf("context is required")
 	}
