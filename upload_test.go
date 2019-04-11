@@ -12,12 +12,12 @@ import (
 	"reflect"
 	"testing"
 	"time"
-	pb "upload-service/proto"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	pb "github.com/meateam/upload-service/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 )

@@ -5,11 +5,11 @@ import (
 	"context"
 	"fmt"
 	"io"
-	pb "upload-service/proto"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	pb "github.com/meateam/upload-service/proto"
 )
 
 // UploadService is a structure used for uploading files to S3
