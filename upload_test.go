@@ -438,7 +438,11 @@ func TestUploadService_UploadInit(t *testing.T) {
 				metadata:    aws.StringMap(make(map[string]string)),
 				ctx:         context.Background(),
 			},
-			wantErr: true,
+			wantErr: false,
+			want: &s3.CreateMultipartUploadOutput{
+				Bucket: aws.String("testbucket"),
+				Key:    aws.String("testfile.txt"),
+			},
 		},
 		{
 			name:   "init upload with nil metadata",
@@ -450,7 +454,11 @@ func TestUploadService_UploadInit(t *testing.T) {
 				metadata:    nil,
 				ctx:         context.Background(),
 			},
-			wantErr: true,
+			wantErr: false,
+			want: &s3.CreateMultipartUploadOutput{
+				Bucket: aws.String("testbucket"),
+				Key:    aws.String("testfile.txt"),
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -566,7 +574,11 @@ func TestUploadHandler_UploadInit(t *testing.T) {
 					Metadata:    make(map[string]string),
 				},
 			},
-			wantErr: true,
+			wantErr: false,
+			want: &pb.UploadInitResponse{
+				Key:    "testfile.txt",
+				Bucket: "testbucket",
+			},
 		},
 		{
 			name:   "UploadInit with nil metadata",
@@ -580,7 +592,11 @@ func TestUploadHandler_UploadInit(t *testing.T) {
 					Metadata:    nil,
 				},
 			},
-			wantErr: true,
+			wantErr: false,
+			want: &pb.UploadInitResponse{
+				Key:    "testfile.txt",
+				Bucket: "testbucket",
+			},
 		},
 	}
 
