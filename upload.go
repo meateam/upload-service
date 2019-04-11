@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"sync"
 	pb "upload-service/proto"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -386,56 +385,24 @@ func (h UploadHandler) UploadInit(ctx context.Context, request *pb.UploadInitReq
 // UploadPart is the request handler for multipart file upload.
 // It is fetching file parts from a RPC stream and uploads them concurrently.
 // Responds with a stream of upload status for each part streamed.
-func (h UploadHandler) UploadPart(stream pb.Upload_UploadPartServer) error {
-	wg := sync.WaitGroup{}
-	for {
-		part, err := stream.Recv()
+func (h UploadHandler) UploadPart(ctx context.Context, request *pb.UploadPartRequest) (*pb.UploadPartResponse, error) {
+	result, err := h.UploadService.UploadPart(
+		ctx,
+		aws.String(request.GetUploadId()),
+		aws.String(request.GetKey()),
+		aws.String(request.GetBucket()),
+		aws.Int64(request.GetPartNumber()),
+		bytes.NewReader(request.GetPart()))
 
-		if err == io.EOF {
-			wg.Wait()
-			return nil
-		}
-
-		if err != nil {
-			errResponse := &pb.UploadPartResponse{Code: 500, Message: fmt.Sprintf("failed fetching part: %v", err)}
-			if err := stream.Send(errResponse); err != nil {
-				return err
-			}
-		}
-
-		wg.Add(1)
-		go func() error {
-			defer wg.Done()
-
-			result, err := h.UploadService.UploadPart(
-				stream.Context(),
-				aws.String(part.GetUploadId()),
-				aws.String(part.GetKey()),
-				aws.String(part.GetBucket()),
-				aws.Int64(part.GetPartNumber()),
-				bytes.NewReader(part.GetPart()))
-
-			var resp *pb.UploadPartResponse
-
-			if err != nil {
-				resp = &pb.UploadPartResponse{
-					Code:    500,
-					Message: fmt.Sprintf("failed uploading part: %v", err),
-				}
-			} else {
-				resp = &pb.UploadPartResponse{
-					Code:    200,
-					Message: fmt.Sprintf("successfully uploaded part %s", *result.ETag),
-				}
-			}
-
-			if err := stream.Send(resp); err != nil {
-				return err
-			}
-
-			return nil
-		}()
+	if err != nil {
+		return nil, fmt.Errorf("failed uploading part: %v", err)
 	}
+
+	resp := &pb.UploadPartResponse{
+		Etag: *result.ETag,
+	}
+
+	return resp, nil
 }
 
 // UploadComplete is the request handler for completing and assembling previously uploaded file parts.
