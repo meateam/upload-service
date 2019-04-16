@@ -273,6 +273,7 @@ func (s UploadService) UploadComplete(ctx aws.Context, uploadID *string, key *st
 	return result, nil
 }
 
+// HeadObject returns object's details.
 func (s UploadService) HeadObject(ctx aws.Context, key *string, bucket *string) (*s3.HeadObjectOutput, error) {
 	if key == nil || *key == "" {
 		return nil, fmt.Errorf("key is required")
@@ -427,7 +428,7 @@ func (h UploadHandler) UploadPart(ctx context.Context, request *pb.UploadPartReq
 // UploadComplete is the request handler for completing and assembling previously uploaded file parts.
 // Responds with the location of the assembled file.
 func (h UploadHandler) UploadComplete(ctx context.Context, request *pb.UploadCompleteRequest) (*pb.UploadCompleteResponse, error) {
-	result, err := h.UploadService.UploadComplete(ctx,
+	_, err := h.UploadService.UploadComplete(ctx,
 		aws.String(request.GetUploadId()),
 		aws.String(request.GetKey()),
 		aws.String(request.GetBucket()))
