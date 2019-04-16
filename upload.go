@@ -273,6 +273,25 @@ func (s UploadService) UploadComplete(ctx aws.Context, uploadID *string, key *st
 	return result, nil
 }
 
+func (s UploadService) HeadObject(ctx aws.Context, key *string, bucket *string) (*s3.HeadObjectOutput, error) {
+	if key == nil || *key == "" {
+		return nil, fmt.Errorf("key is required")
+	}
+
+	if bucket == nil || *bucket == "" {
+		return nil, fmt.Errorf("bucket name is required")
+	}
+	if ctx == nil {
+		return nil, fmt.Errorf("context is required")
+	}
+
+	obj, err := s.s3Client.HeadObjectWithContext(ctx, &s3.HeadObjectInput{Bucket: bucket, Key: key})
+	if err != nil {
+		return nil, fmt.Errorf("failed to head object")
+	}
+	return obj, nil
+}
+
 // UploadAbort aborts a multipart upload. After a multipart upload is aborted, no additional parts
 // can be uploaded using that upload ID. The storage consumed by any previously uploaded parts will be freed.
 // However, if any part uploads are currently in progress, those part uploads might or might not succeed.
@@ -416,7 +435,12 @@ func (h UploadHandler) UploadComplete(ctx context.Context, request *pb.UploadCom
 		return nil, err
 	}
 
-	return &pb.UploadCompleteResponse{Location: *result.Location}, nil
+	obj, err := h.UploadService.HeadObject(ctx, aws.String(request.GetKey()), aws.String(request.GetBucket()))
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.UploadCompleteResponse{ContentLength: *obj.ContentLength, ContentType: *obj.ContentType}, nil
 }
 
 // UploadAbort is the request handler for aborting and freeing previously uploaded parts.

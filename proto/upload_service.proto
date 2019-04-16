@@ -126,9 +126,10 @@ message UploadCompleteRequest {
 
 // UploadCompleteResponse is the response for completing resumable upload
 message UploadCompleteResponse {
-    // The location that the file was uploaded to
-    string location = 1;
-
+    // The size that the uploaded file
+    int64 ContentLength = 1;
+    // The type of the uploaded file
+    string ContentType = 2;
 }
 
 // UploadAbortRequest is the request for aborting resumable upload
