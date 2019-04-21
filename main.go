@@ -36,7 +36,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer(grpc.MaxRecvMsgSize(10 << 20))
-	server := &UploadHandler{UploadService: UploadService{s3Client: s3Client}}
+	server := &UploadHandler{UploadService: &UploadService{s3Client: s3Client}}
 	pb.RegisterUploadServer(grpcServer, server)
 	grpcServer.Serve(lis)
 }
