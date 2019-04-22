@@ -1,6 +1,7 @@
 package main
 
 import (
+	"sync"
 	"bytes"
 	"context"
 	"fmt"
@@ -15,15 +16,18 @@ import (
 // UploadService is a structure used for uploading files to S3
 type UploadService struct {
 	s3Client *s3.S3
+	mu			 sync.Mutex
 }
 
 // EnsureBucketExists Creates a bucket if it doesn't exist.
-func (s UploadService) EnsureBucketExists(ctx aws.Context, bucket *string) error {
+func (s *UploadService) EnsureBucketExists(ctx aws.Context, bucket *string) error {
 	if ctx == nil {
 		return fmt.Errorf("context is required")
 	}
 
 	bucketService := BucketService{s3Client: s.s3Client}
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	bucketExists := bucketService.BucketExists(ctx, bucket)
 
 	if bucketExists == false {
@@ -43,7 +47,7 @@ func (s UploadService) EnsureBucketExists(ctx aws.Context, bucket *string) error
 // UploadFile uploads a file to the given bucket and key in S3.
 // If metadata is a non-nil map then it will be uploaded with the file.
 // Returns the file's location and an error if any occured.
-func (s UploadService) UploadFile(ctx aws.Context, file io.Reader, key *string, bucket *string, contentType *string, metadata map[string]*string) (*string, error) {
+func (s *UploadService) UploadFile(ctx aws.Context, file io.Reader, key *string, bucket *string, contentType *string, metadata map[string]*string) (*string, error) {
 	if file == nil {
 		return nil, fmt.Errorf("file is required")
 	}
@@ -93,7 +97,7 @@ func (s UploadService) UploadFile(ctx aws.Context, file io.Reader, key *string, 
 
 // UploadInit initiates a multipart upload to the given bucket and key in S3 with metadata.
 // File metadata is required for multipart upload.
-func (s UploadService) UploadInit(ctx aws.Context, key *string, bucket *string, contentType *string, metadata map[string]*string) (*s3.CreateMultipartUploadOutput, error) {
+func (s *UploadService) UploadInit(ctx aws.Context, key *string, bucket *string, contentType *string, metadata map[string]*string) (*s3.CreateMultipartUploadOutput, error) {
 	if key == nil || *key == "" {
 		return nil, fmt.Errorf("key is required")
 	}
@@ -127,7 +131,7 @@ func (s UploadService) UploadInit(ctx aws.Context, key *string, bucket *string, 
 }
 
 // UploadPart uploads a part in a multipart upload of a file.
-func (s UploadService) UploadPart(ctx aws.Context, uploadID *string, key *string, bucket *string, partNumber *int64, body io.ReadSeeker) (*s3.UploadPartOutput, error) {
+func (s *UploadService) UploadPart(ctx aws.Context, uploadID *string, key *string, bucket *string, partNumber *int64, body io.ReadSeeker) (*s3.UploadPartOutput, error) {
 	if body == nil {
 		return nil, fmt.Errorf("part body is required")
 	}
@@ -178,7 +182,7 @@ func (s UploadService) UploadPart(ctx aws.Context, uploadID *string, key *string
 }
 
 // ListUploadParts lists the uploaded file parts of a multipart upload of a file.
-func (s UploadService) ListUploadParts(ctx aws.Context, uploadID *string, key *string, bucket *string) (*s3.ListPartsOutput, error) {
+func (s *UploadService) ListUploadParts(ctx aws.Context, uploadID *string, key *string, bucket *string) (*s3.ListPartsOutput, error) {
 	if key == nil || *key == "" {
 		return nil, fmt.Errorf("key is required")
 	}
@@ -216,7 +220,7 @@ func (s UploadService) ListUploadParts(ctx aws.Context, uploadID *string, key *s
 
 // UploadComplete completes a multipart upload by assembling previously uploaded parts
 // assosiated with uploadID.
-func (s UploadService) UploadComplete(ctx aws.Context, uploadID *string, key *string, bucket *string) (*s3.CompleteMultipartUploadOutput, error) {
+func (s *UploadService) UploadComplete(ctx aws.Context, uploadID *string, key *string, bucket *string) (*s3.CompleteMultipartUploadOutput, error) {
 	if key == nil || *key == "" {
 		return nil, fmt.Errorf("key is required")
 	}
@@ -274,7 +278,7 @@ func (s UploadService) UploadComplete(ctx aws.Context, uploadID *string, key *st
 }
 
 // HeadObject returns object's details.
-func (s UploadService) HeadObject(ctx aws.Context, key *string, bucket *string) (*s3.HeadObjectOutput, error) {
+func (s *UploadService) HeadObject(ctx aws.Context, key *string, bucket *string) (*s3.HeadObjectOutput, error) {
 	if key == nil || *key == "" {
 		return nil, fmt.Errorf("key is required")
 	}
@@ -300,7 +304,7 @@ func (s UploadService) HeadObject(ctx aws.Context, key *string, bucket *string) 
 // completely free all storage consumed by all parts. To verify that all parts have been removed,
 // so you don't get charged for the part storage, you should call
 // the List Parts operation and ensure the parts list is empty.
-func (s UploadService) UploadAbort(ctx aws.Context, uploadID *string, key *string, bucket *string) (bool, error) {
+func (s *UploadService) UploadAbort(ctx aws.Context, uploadID *string, key *string, bucket *string) (bool, error) {
 	if key == nil || *key == "" {
 		return false, fmt.Errorf("key is required")
 	}
@@ -338,7 +342,7 @@ func (s UploadService) UploadAbort(ctx aws.Context, uploadID *string, key *strin
 
 // UploadHandler handles upload requests by uploading the file's data to aws-s3 Object Storage
 type UploadHandler struct {
-	UploadService
+	*UploadService
 }
 
 // UploadMedia is the request handler for file upload, it is responsible for getting the file

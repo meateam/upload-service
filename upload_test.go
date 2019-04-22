@@ -48,8 +48,8 @@ func init() {
 	s3Client = s3.New(newSession)
 
 	lis = bufconn.Listen(bufSize)
-	grpcServer := grpc.NewServer(grpc.MaxRecvMsgSize(10 << 20))
-	server := &UploadHandler{UploadService: UploadService{s3Client: s3Client}}
+	grpcServer := grpc.NewServer(grpc.MaxRecvMsgSize(5000 << 20))
+	server := &UploadHandler{UploadService: &UploadService{s3Client: s3Client}}
 	pb.RegisterUploadServer(grpcServer, server)
 	go func() {
 		if err := grpcServer.Serve(lis); err != nil {
@@ -204,11 +204,11 @@ func TestUploadHandler_UploadMedia(t *testing.T) {
 	hugefile := make([]byte, 5<<20)
 	rand.Read(hugefile)
 
-	uploadservice := UploadService{
+	uploadservice := &UploadService{
 		s3Client: s3Client,
 	}
 	type fields struct {
-		UploadService UploadService
+		UploadService *UploadService
 	}
 	type args struct {
 		ctx     context.Context
@@ -481,11 +481,11 @@ func TestUploadService_UploadInit(t *testing.T) {
 func TestUploadHandler_UploadInit(t *testing.T) {
 	metadata := make(map[string]string)
 	metadata["test"] = "testt"
-	uploadservice := UploadService{
+	uploadservice := &UploadService{
 		s3Client: s3Client,
 	}
 	type fields struct {
-		UploadService UploadService
+		UploadService *UploadService
 	}
 	type args struct {
 		ctx     context.Context
@@ -1297,7 +1297,7 @@ func TestUploadService_UploadAbort(t *testing.T) {
 // TODO:
 func TestUploadHandler_UploadAbort(t *testing.T) {
 	type fields struct {
-		UploadService UploadService
+		UploadService *UploadService
 	}
 	type args struct {
 		ctx     context.Context
@@ -1332,7 +1332,7 @@ func TestUploadHandler_UploadAbort(t *testing.T) {
 // TODO:
 func TestUploadHandler_UploadComplete(t *testing.T) {
 	type fields struct {
-		UploadService UploadService
+		UploadService *UploadService
 	}
 	type args struct {
 		ctx     context.Context
@@ -1367,7 +1367,7 @@ func TestUploadHandler_UploadComplete(t *testing.T) {
 // TODO:
 func TestUploadHandler_UploadPart(t *testing.T) {
 	type fields struct {
-		UploadService UploadService
+		UploadService *UploadService
 	}
 	type args struct {
 		ctx     context.Context
