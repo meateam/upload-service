@@ -1,6 +1,6 @@
 repoName: "meateam/upload-service"
 runTests: true
-testCommand: "go test -v ./..."
+testCommand: ""
 deployUponTestSuccess: true
 deployCommand:
 deployEnvironment:
