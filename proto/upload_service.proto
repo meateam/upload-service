@@ -12,7 +12,7 @@ service Upload {
     rpc UploadMedia(UploadMediaRequest) returns (UploadMediaResponse) {}
     rpc UploadMultipart(UploadMultipartRequest) returns (UploadMultipartResponse) {}
     rpc UploadInit(UploadInitRequest) returns (UploadInitResponse) {}
-    rpc UploadPart(UploadPartRequest) returns (UploadPartResponse) {}
+    rpc UploadPart(stream UploadPartRequest) returns (stream UploadPartResponse) {}
     rpc UploadComplete(UploadCompleteRequest) returns (UploadCompleteResponse) {}
     rpc UploadAbort(UploadAbortRequest) returns (UploadAbortResponse) {}
 }
@@ -109,7 +109,11 @@ message UploadPartRequest {
 
 // UploadPartResponse is the response for resumable part upload
 message UploadPartResponse {
-    string etag = 1;
+    // Upload status code
+    int32 code = 1;
+
+    // Upload status message
+    string message = 2;
 }
 
 // UploadCompleteRequest is the request for completing resumable upload
