@@ -12,12 +12,12 @@ import (
 	"reflect"
 	"testing"
 	"time"
+	pb "upload-service/proto"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	pb "github.com/meateam/upload-service/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 )
@@ -1365,19 +1365,18 @@ func TestUploadHandler_UploadComplete(t *testing.T) {
 }
 
 // TODO:
+
 func TestUploadHandler_UploadPart(t *testing.T) {
 	type fields struct {
 		UploadService *UploadService
 	}
 	type args struct {
-		ctx     context.Context
-		request *pb.UploadPartRequest
+		stream pb.Upload_UploadPartServer
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		want    *pb.UploadPartResponse
 		wantErr bool
 	}{
 		// TODO: Add test cases.
@@ -1387,13 +1386,8 @@ func TestUploadHandler_UploadPart(t *testing.T) {
 			h := UploadHandler{
 				UploadService: tt.fields.UploadService,
 			}
-			got, err := h.UploadPart(tt.args.ctx, tt.args.request)
-			if (err != nil) != tt.wantErr {
+			if err := h.UploadPart(tt.args.stream); (err != nil) != tt.wantErr {
 				t.Errorf("UploadHandler.UploadPart() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("UploadHandler.UploadPart() = %v, want %v", got, tt.want)
 			}
 		})
 	}
