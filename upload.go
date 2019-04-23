@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	pb "upload-service/proto"
+	pb "github.com/meateam/upload-service/proto"
 )
 
 // UploadService is a structure used for uploading files to S3
@@ -83,7 +83,8 @@ func (s *UploadService) UploadFile(ctx aws.Context, file io.Reader, key *string,
 
 	if metadata != nil {
 		input.Metadata = metadata
-	}
+	}Signed-off-by: omerzamir <zamir98@gmail.com>
+
 
 	// Upload a new object with the file's data to the user's bucket
 	output, err := uploader.UploadWithContext(ctx, input)
@@ -152,7 +153,8 @@ func (s *UploadService) UploadPart(ctx aws.Context, uploadID *string, key *strin
 		return nil, fmt.Errorf("part number is required")
 	}
 
-	if *partNumber < 1 || *partNumber > 10000 {
+	if *partNumber < 1 || *parSigned-off-by: omerzamir <zamir98@gmail.com>
+	tNumber > 10000 {
 		return nil, fmt.Errorf("part number must be between 1 and 10,000")
 	}
 

@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	pb "upload-service/proto"
+	pb "github.com/meateam/upload-service/proto"
 	"google.golang.org/grpc"
 )
 
