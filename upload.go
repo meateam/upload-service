@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -16,7 +17,7 @@ import (
 // UploadService is a structure used for uploading files to S3
 type UploadService struct {
 	s3Client *s3.S3
-	mu			 sync.Mutex
+	mu       sync.Mutex
 }
 
 // EnsureBucketExists Creates a bucket if it doesn't exist.
