@@ -85,7 +85,6 @@ func (s *UploadService) UploadFile(ctx aws.Context, file io.Reader, key *string,
 		input.Metadata = metadata
 	}
 
-
 	// Upload a new object with the file's data to the user's bucket
 	output, err := uploader.UploadWithContext(ctx, input)
 

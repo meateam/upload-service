@@ -42,7 +42,7 @@ func (m *UploadMediaRequest) Reset()         { *m = UploadMediaRequest{} }
 func (m *UploadMediaRequest) String() string { return proto.CompactTextString(m) }
 func (*UploadMediaRequest) ProtoMessage()    {}
 func (*UploadMediaRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_a4e1d4ff89b760d0, []int{0}
+	return fileDescriptor_upload_service_83ab94603d2ca76f, []int{0}
 }
 func (m *UploadMediaRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadMediaRequest.Unmarshal(m, b)
@@ -103,7 +103,7 @@ func (m *UploadMediaResponse) Reset()         { *m = UploadMediaResponse{} }
 func (m *UploadMediaResponse) String() string { return proto.CompactTextString(m) }
 func (*UploadMediaResponse) ProtoMessage()    {}
 func (*UploadMediaResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_a4e1d4ff89b760d0, []int{1}
+	return fileDescriptor_upload_service_83ab94603d2ca76f, []int{1}
 }
 func (m *UploadMediaResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadMediaResponse.Unmarshal(m, b)
@@ -151,7 +151,7 @@ func (m *UploadMultipartRequest) Reset()         { *m = UploadMultipartRequest{}
 func (m *UploadMultipartRequest) String() string { return proto.CompactTextString(m) }
 func (*UploadMultipartRequest) ProtoMessage()    {}
 func (*UploadMultipartRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_a4e1d4ff89b760d0, []int{2}
+	return fileDescriptor_upload_service_83ab94603d2ca76f, []int{2}
 }
 func (m *UploadMultipartRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadMultipartRequest.Unmarshal(m, b)
@@ -219,7 +219,7 @@ func (m *UploadMultipartResponse) Reset()         { *m = UploadMultipartResponse
 func (m *UploadMultipartResponse) String() string { return proto.CompactTextString(m) }
 func (*UploadMultipartResponse) ProtoMessage()    {}
 func (*UploadMultipartResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_a4e1d4ff89b760d0, []int{3}
+	return fileDescriptor_upload_service_83ab94603d2ca76f, []int{3}
 }
 func (m *UploadMultipartResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadMultipartResponse.Unmarshal(m, b)
@@ -265,7 +265,7 @@ func (m *UploadInitRequest) Reset()         { *m = UploadInitRequest{} }
 func (m *UploadInitRequest) String() string { return proto.CompactTextString(m) }
 func (*UploadInitRequest) ProtoMessage()    {}
 func (*UploadInitRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_a4e1d4ff89b760d0, []int{4}
+	return fileDescriptor_upload_service_83ab94603d2ca76f, []int{4}
 }
 func (m *UploadInitRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadInitRequest.Unmarshal(m, b)
@@ -330,7 +330,7 @@ func (m *UploadInitResponse) Reset()         { *m = UploadInitResponse{} }
 func (m *UploadInitResponse) String() string { return proto.CompactTextString(m) }
 func (*UploadInitResponse) ProtoMessage()    {}
 func (*UploadInitResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_a4e1d4ff89b760d0, []int{5}
+	return fileDescriptor_upload_service_83ab94603d2ca76f, []int{5}
 }
 func (m *UploadInitResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadInitResponse.Unmarshal(m, b)
@@ -392,7 +392,7 @@ func (m *UploadPartRequest) Reset()         { *m = UploadPartRequest{} }
 func (m *UploadPartRequest) String() string { return proto.CompactTextString(m) }
 func (*UploadPartRequest) ProtoMessage()    {}
 func (*UploadPartRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_a4e1d4ff89b760d0, []int{6}
+	return fileDescriptor_upload_service_83ab94603d2ca76f, []int{6}
 }
 func (m *UploadPartRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadPartRequest.Unmarshal(m, b)
@@ -462,7 +462,7 @@ func (m *UploadPartResponse) Reset()         { *m = UploadPartResponse{} }
 func (m *UploadPartResponse) String() string { return proto.CompactTextString(m) }
 func (*UploadPartResponse) ProtoMessage()    {}
 func (*UploadPartResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_a4e1d4ff89b760d0, []int{7}
+	return fileDescriptor_upload_service_83ab94603d2ca76f, []int{7}
 }
 func (m *UploadPartResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadPartResponse.Unmarshal(m, b)
@@ -513,7 +513,7 @@ func (m *UploadCompleteRequest) Reset()         { *m = UploadCompleteRequest{} }
 func (m *UploadCompleteRequest) String() string { return proto.CompactTextString(m) }
 func (*UploadCompleteRequest) ProtoMessage()    {}
 func (*UploadCompleteRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_a4e1d4ff89b760d0, []int{8}
+	return fileDescriptor_upload_service_83ab94603d2ca76f, []int{8}
 }
 func (m *UploadCompleteRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadCompleteRequest.Unmarshal(m, b)
@@ -569,7 +569,7 @@ func (m *UploadCompleteResponse) Reset()         { *m = UploadCompleteResponse{}
 func (m *UploadCompleteResponse) String() string { return proto.CompactTextString(m) }
 func (*UploadCompleteResponse) ProtoMessage()    {}
 func (*UploadCompleteResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_a4e1d4ff89b760d0, []int{9}
+	return fileDescriptor_upload_service_83ab94603d2ca76f, []int{9}
 }
 func (m *UploadCompleteResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadCompleteResponse.Unmarshal(m, b)
@@ -620,7 +620,7 @@ func (m *UploadAbortRequest) Reset()         { *m = UploadAbortRequest{} }
 func (m *UploadAbortRequest) String() string { return proto.CompactTextString(m) }
 func (*UploadAbortRequest) ProtoMessage()    {}
 func (*UploadAbortRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_a4e1d4ff89b760d0, []int{10}
+	return fileDescriptor_upload_service_83ab94603d2ca76f, []int{10}
 }
 func (m *UploadAbortRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadAbortRequest.Unmarshal(m, b)
@@ -673,7 +673,7 @@ func (m *UploadAbortResponse) Reset()         { *m = UploadAbortResponse{} }
 func (m *UploadAbortResponse) String() string { return proto.CompactTextString(m) }
 func (*UploadAbortResponse) ProtoMessage()    {}
 func (*UploadAbortResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_upload_service_a4e1d4ff89b760d0, []int{11}
+	return fileDescriptor_upload_service_83ab94603d2ca76f, []int{11}
 }
 func (m *UploadAbortResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UploadAbortResponse.Unmarshal(m, b)
@@ -998,10 +998,10 @@ var _Upload_serviceDesc = grpc.ServiceDesc{
 }
 
 func init() {
-	proto.RegisterFile("upload_service.proto", fileDescriptor_upload_service_a4e1d4ff89b760d0)
+	proto.RegisterFile("upload_service.proto", fileDescriptor_upload_service_83ab94603d2ca76f)
 }
 
-var fileDescriptor_upload_service_a4e1d4ff89b760d0 = []byte{
+var fileDescriptor_upload_service_83ab94603d2ca76f = []byte{
 	// 591 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xac, 0x55, 0x5d, 0x6f, 0xd3, 0x30,
 	0x14, 0x5d, 0x9a, 0xb6, 0x74, 0xb7, 0x8c, 0x0f, 0x33, 0x46, 0x09, 0xa2, 0x4c, 0x11, 0x12, 0x7d,
