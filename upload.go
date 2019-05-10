@@ -219,7 +219,7 @@ func (s *UploadService) ListUploadParts(ctx aws.Context, uploadID *string, key *
 }
 
 // UploadComplete completes a multipart upload by assembling previously uploaded parts
-// assosiated with uploadID.
+// associated with uploadID.
 func (s *UploadService) UploadComplete(ctx aws.Context, uploadID *string, key *string, bucket *string) (*s3.CompleteMultipartUploadOutput, error) {
 	if key == nil || *key == "" {
 		return nil, fmt.Errorf("key is required")
