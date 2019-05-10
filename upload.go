@@ -46,7 +46,7 @@ func (s *UploadService) EnsureBucketExists(ctx aws.Context, bucket *string) erro
 
 // UploadFile uploads a file to the given bucket and key in S3.
 // If metadata is a non-nil map then it will be uploaded with the file.
-// Returns the file's location and an error if any occured.
+// Returns the file's location and an error if any occurred.
 func (s *UploadService) UploadFile(ctx aws.Context, file io.Reader, key *string, bucket *string, contentType *string, metadata map[string]*string) (*string, error) {
 	if file == nil {
 		return nil, fmt.Errorf("file is required")
@@ -452,11 +452,8 @@ func (h UploadHandler) UploadPart(stream pb.Upload_UploadPartServer) error {
 				}
 			}
 
-			if err := stream.Send(resp); err != nil {
-				return err
-			}
-
-			return nil
+			err = stream.Send(resp)
+			return err
 		}()
 	}
 }
