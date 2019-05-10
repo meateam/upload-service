@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	pb "github.com/meateam/upload-service/proto"
+	"go.elastic.co/apm/module/apmgrpc"
 	"google.golang.org/grpc"
 )
 
@@ -35,7 +36,12 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	grpcServer := grpc.NewServer(grpc.MaxRecvMsgSize(5120 << 20))
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(
+			apmgrpc.NewUnaryServerInterceptor(apmgrpc.WithRecovery()),
+		),
+		grpc.MaxRecvMsgSize(5120<<20),
+	)
 	server := &UploadHandler{UploadService: &UploadService{s3Client: s3Client}}
 	pb.RegisterUploadServer(grpcServer, server)
 	grpcServer.Serve(lis)
