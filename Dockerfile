@@ -15,6 +15,6 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 COPY --from=builder /go/src/app/upload-service /upload-service
 COPY --from=builder /bin/grpc_health_probe /bin/grpc_health_probe
-ENTRYPOINT ./upload-service
 LABEL Name=upload-service Version=0.0.1
 EXPOSE 8080
+ENTRYPOINT ./upload-service
