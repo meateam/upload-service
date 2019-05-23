@@ -64,7 +64,11 @@ func main() {
 	serverOpts := append(
 		ilogger.WithElasticsearchServerLogger(
 			logrusEntry,
-			ilogger.IgnoreMethodsServerPayloadLoggingDecider("/upload.Upload/UploadMedia", "/upload.Upload/UploadMultipart", "/upload.Upload/UploadPart"),
+			ilogger.IgnoreMethodsServerPayloadLoggingDecider(
+				"/upload.Upload/UploadMedia",
+				"/upload.Upload/UploadMultipart",
+				"/upload.Upload/UploadPart",
+			),
 			ignoreExtractUploadRequest(),
 			loggerOpts...,
 		),
@@ -97,7 +101,11 @@ func main() {
 
 func ignoreExtractUploadRequest() func(string) bool {
 	return func(fullMethodName string) bool {
-		fullIgnoredMethodNames := []string{"/upload.Upload/UploadMedia", "/upload.Upload/UploadMultipart", "/upload.Upload/UploadPart"}
+		fullIgnoredMethodNames := []string{
+			"/upload.Upload/UploadMedia",
+			"/upload.Upload/UploadMultipart",
+			"/upload.Upload/UploadPart",
+		}
 		for _, ignoredMethodName := range fullIgnoredMethodNames {
 			if ignoredMethodName == fullMethodName {
 				return false
