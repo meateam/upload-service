@@ -1,4 +1,3 @@
-
 #build stage
 FROM golang:alpine AS builder
 ENV GO111MODULE=on

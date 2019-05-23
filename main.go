@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net"
 	"os"
 	"strconv"
@@ -11,11 +10,17 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	ilogger "github.com/meateam/grpc-elasticsearch-logger"
 	pb "github.com/meateam/upload-service/proto"
-	"go.elastic.co/apm/module/apmgrpc"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
+)
+
+var (
+	logger = ilogger.NewLogger()
 )
 
 func main() {
@@ -39,17 +44,39 @@ func main() {
 		S3ForcePathStyle: aws.Bool(true),
 	}
 	newSession := session.New(s3Config)
+	logger.Infof("connected to S3 - %s", s3Endpoint)
 	s3Client := s3.New(newSession)
 	lis, err := net.Listen("tcp", ":"+tcpPort)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		logger.Fatalf("failed to listen: %v", err)
+	}
+	logger.Infof("listening on port %s", tcpPort)
+
+	// Make sure that log statements internal to gRPC library are logged using the logrus Logger as well.
+	logrusEntry := logrus.NewEntry(logger)
+	grpc_logrus.ReplaceGrpcLogger(logrusEntry)
+
+	// Shared options for the logger, with a custom gRPC code to log level function.
+	loggerOpts := []grpc_logrus.Option{
+		grpc_logrus.WithLevels(grpc_logrus.DefaultCodeToLevel),
 	}
 
-	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(
-			apmgrpc.NewUnaryServerInterceptor(apmgrpc.WithRecovery()),
+	serverOpts := append(
+		ilogger.WithElasticsearchServerLogger(
+			logrusEntry,
+			ilogger.IgnoreMethodsServerPayloadLoggingDecider(
+				"/upload.Upload/UploadMedia",
+				"/upload.Upload/UploadMultipart",
+				"/upload.Upload/UploadPart",
+			),
+			ignoreExtractUploadRequest(),
+			loggerOpts...,
 		),
 		grpc.MaxRecvMsgSize(5120<<20),
+	)
+
+	grpcServer := grpc.NewServer(
+		serverOpts...,
 	)
 	server := &UploadHandler{UploadService: &UploadService{s3Client: s3Client}}
 	pb.RegisterUploadServer(grpcServer, server)
@@ -68,5 +95,22 @@ func main() {
 			time.Sleep(time.Second * time.Duration(healthCheckInterval))
 		}
 	}()
+	logger.Infof("serving grpc server on port %s", tcpPort)
 	grpcServer.Serve(lis)
+}
+
+func ignoreExtractUploadRequest() func(string) bool {
+	return func(fullMethodName string) bool {
+		fullIgnoredMethodNames := []string{
+			"/upload.Upload/UploadMedia",
+			"/upload.Upload/UploadMultipart",
+			"/upload.Upload/UploadPart",
+		}
+		for _, ignoredMethodName := range fullIgnoredMethodNames {
+			if ignoredMethodName == fullMethodName {
+				return false
+			}
+		}
+		return true
+	}
 }
