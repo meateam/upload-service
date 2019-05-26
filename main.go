@@ -97,14 +97,3 @@ func main() {
 	logger.Infof("serving grpc server on port %s", tcpPort)
 	grpcServer.Serve(lis)
 }
-
-func ignoreExtractUploadRequest(fullIgnoredMethodNames ...string) func(string) bool {
-	return func(fullMethodName string) bool {
-		for _, ignoredMethodName := range fullIgnoredMethodNames {
-			if ignoredMethodName == fullMethodName {
-				return false
-			}
-		}
-		return true
-	}
-}
