@@ -50,25 +50,37 @@ func main() {
 	if err != nil {
 		logger.Fatalf("failed to listen: %v", err)
 	}
-	logger.Infof("listening on port %s", tcpPort)
 
+	logger.Infof("listening on port %s", tcpPort)
 	logrusEntry := logrus.NewEntry(logger)
 
-	// Shared options for the logger, with a custom gRPC code to log level function.
-	loggerOpts := []grpc_logrus.Option{
-		grpc_logrus.WithLevels(grpc_logrus.DefaultCodeToLevel),
-	}
-
-	fullIgnoredMethodNames := []string{
+	ignorePayload := ilogger.IgnoreServerMethodsDecider(
 		"/upload.Upload/UploadMedia",
 		"/upload.Upload/UploadMultipart",
 		"/upload.Upload/UploadPart",
+		os.Getenv("ELASTIC_APM_IGNORE_URLS"),
+	)
+
+	ignoreInitialRequest := ilogger.IgnoreServerMethodsDecider(
+		"/upload.Upload/UploadMedia",
+		"/upload.Upload/UploadMultipart",
+		"/upload.Upload/UploadPart",
+		os.Getenv("ELASTIC_APM_IGNORE_URLS"),
+	)
+
+	// Shared options for the logger, with a custom gRPC code to log level function.
+	loggerOpts := []grpc_logrus.Option{
+		grpc_logrus.WithDecider(func(fullMethodName string, err error) bool {
+			return ignorePayload(fullMethodName)
+		}),
+		grpc_logrus.WithLevels(grpc_logrus.DefaultCodeToLevel),
 	}
 
 	serverOpts := append(
 		ilogger.ElasticsearchLoggerServerInterceptor(
 			logrusEntry,
-			ilogger.IgnoreServerMethodsDecider(fullIgnoredMethodNames...),
+			ignorePayload,
+			ignoreInitialRequest,
 			loggerOpts...,
 		),
 		grpc.MaxRecvMsgSize(5120<<20),
