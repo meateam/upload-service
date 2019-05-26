@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
-	ilogger "github.com/meateam/grpc-elasticsearch-logger"
+	ilogger "github.com/meateam/elasticsearch-logger"
 	pb "github.com/meateam/upload-service/proto"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -62,7 +62,7 @@ func main() {
 	}
 
 	serverOpts := append(
-		ilogger.WithElasticsearchServerLogger(
+		ilogger.ElasticsearchLoggerServerInterceptor(
 			logrusEntry,
 			ilogger.IgnoreMethodsServerPayloadLoggingDecider(
 				"/upload.Upload/UploadMedia",
