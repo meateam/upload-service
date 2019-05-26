@@ -74,6 +74,8 @@ github.com/meateam/elasticsearch-logger v1.0.5 h1:iyyG1pHRMY5Sk5zBWczo+WUNiZxevX
 github.com/meateam/elasticsearch-logger v1.0.5/go.mod h1:fraWhSU7ym77V5QJRhIm0jJ1DtfFsnOJXrFfYEyCC5c=
 github.com/meateam/elasticsearch-logger v1.0.6 h1:Rv2Jqaa9RPI7i0M+6yCqQ7p2oYxcnil1EJcGuEbmTjE=
 github.com/meateam/elasticsearch-logger v1.0.6/go.mod h1:YCNIb2u+cXCFVI7fWzlrFFEgp8DQ5BcX9Yl1pCY4EVg=
+github.com/meateam/elasticsearch-logger v1.0.9 h1:S6FHT54whm48mOSEhmKoKAJOR7eVe2VGxqZ8p9aKRKU=
+github.com/meateam/elasticsearch-logger v1.0.9/go.mod h1:YCNIb2u+cXCFVI7fWzlrFFEgp8DQ5BcX9Yl1pCY4EVg=
 github.com/meateam/elogrus/v4 v4.0.2 h1:X+fpps3Ti9vIoqo/wnPcuaB+wxkZwkmTppXnnBe1Un4=
 github.com/meateam/elogrus/v4 v4.0.2/go.mod h1:O+KJPmbnEV80u+V8tCYTvcBpzp/HZa7XR4nqDtDMzYg=
 github.com/meateam/grpc-elasticsearch-logger v1.0.3 h1:9ClD50dUWQM1Fqyh+INrisZ51xz9AyNQhqbAlXyC7yo=

@@ -52,9 +52,7 @@ func main() {
 	}
 	logger.Infof("listening on port %s", tcpPort)
 
-	// Make sure that log statements internal to gRPC library are logged using the logrus Logger as well.
 	logrusEntry := logrus.NewEntry(logger)
-	grpc_logrus.ReplaceGrpcLogger(logrusEntry)
 
 	// Shared options for the logger, with a custom gRPC code to log level function.
 	loggerOpts := []grpc_logrus.Option{
@@ -70,8 +68,7 @@ func main() {
 	serverOpts := append(
 		ilogger.ElasticsearchLoggerServerInterceptor(
 			logrusEntry,
-			ilogger.IgnoreMethodsServerPayloadLoggingDecider(fullIgnoredMethodNames...),
-			ignoreExtractUploadRequest(fullIgnoredMethodNames...),
+			ilogger.IgnoreServerMethodsDecider(fullIgnoredMethodNames...),
 			loggerOpts...,
 		),
 		grpc.MaxRecvMsgSize(5120<<20),
