@@ -61,15 +61,17 @@ func main() {
 		grpc_logrus.WithLevels(grpc_logrus.DefaultCodeToLevel),
 	}
 
+	fullIgnoredMethodNames := []string{
+		"/upload.Upload/UploadMedia",
+		"/upload.Upload/UploadMultipart",
+		"/upload.Upload/UploadPart",
+	}
+
 	serverOpts := append(
 		ilogger.ElasticsearchLoggerServerInterceptor(
 			logrusEntry,
-			ilogger.IgnoreMethodsServerPayloadLoggingDecider(
-				"/upload.Upload/UploadMedia",
-				"/upload.Upload/UploadMultipart",
-				"/upload.Upload/UploadPart",
-			),
-			ignoreExtractUploadRequest(),
+			ilogger.IgnoreMethodsServerPayloadLoggingDecider(fullIgnoredMethodNames...),
+			ignoreExtractUploadRequest(fullIgnoredMethodNames...),
 			loggerOpts...,
 		),
 		grpc.MaxRecvMsgSize(5120<<20),
@@ -99,13 +101,8 @@ func main() {
 	grpcServer.Serve(lis)
 }
 
-func ignoreExtractUploadRequest() func(string) bool {
+func ignoreExtractUploadRequest(fullIgnoredMethodNames ...string) func(string) bool {
 	return func(fullMethodName string) bool {
-		fullIgnoredMethodNames := []string{
-			"/upload.Upload/UploadMedia",
-			"/upload.Upload/UploadMultipart",
-			"/upload.Upload/UploadPart",
-		}
 		for _, ignoredMethodName := range fullIgnoredMethodNames {
 			if ignoredMethodName == fullMethodName {
 				return false
