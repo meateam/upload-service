@@ -891,7 +891,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 			t.Errorf("UploadService.UploadPart() error = %v, wantErr %v", err, true)
 			return
 		}
-		if got == nil || got.ETag == nil || *got.ETag == "" {
+		if got != nil && (got.ETag != nil || *got.ETag != "") {
 			t.Errorf("UploadService.UploadPart() = %v", got)
 		}
 	})
@@ -913,7 +913,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 			t.Errorf("UploadService.UploadPart() error = %v, wantErr %v", err, true)
 			return
 		}
-		if got == nil || got.ETag == nil || *got.ETag == "" {
+		if got != nil && (got.ETag != nil || *got.ETag != "") {
 			t.Errorf("UploadService.UploadPart() = %v", got)
 		}
 	})
