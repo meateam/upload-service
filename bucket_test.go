@@ -14,7 +14,6 @@ import (
 
 // Declaring global variables.
 var s3Endpoint string
-var newSession = session.Must(session.NewSession())
 var s3Client *s3.S3
 
 func init() {
@@ -34,11 +33,18 @@ func init() {
 	}
 
 	// Init real client.
-	newSession = session.New(s3Config)
+	newSession, err := session.NewSession(s3Config)
+	if err != nil {
+		logger.Fatalf(err.Error())
+	}
 	s3Client = s3.New(newSession)
 
-	emptyAndDeleteBucket("testbucket")
-	emptyAndDeleteBucket("testbucket1")
+	if err := emptyAndDeleteBucket("testbucket"); err != nil {
+		log.Printf("emptyAndDeleteBucket failed with error: %v", err)
+	}
+	if err := emptyAndDeleteBucket("testbucket1"); err != nil {
+		log.Printf("emptyAndDeleteBucket failed with error: %v", err)
+	}
 }
 
 func TestBucketService_CreateBucket(t *testing.T) {
@@ -105,7 +111,9 @@ func TestBucketService_BucketExists(t *testing.T) {
 	s := BucketService{
 		s3Client: s3Client,
 	}
-	s.CreateBucket(context.Background(), aws.String("testbucket"))
+	if _, err := s.CreateBucket(context.Background(), aws.String("testbucket")); err != nil {
+		log.Printf("CreateBucket failed with error: %v", err)
+	}
 
 	type fields struct {
 		s3Client *s3.S3
@@ -160,26 +168,29 @@ func TestBucketService_BucketExists(t *testing.T) {
 	}
 }
 
-//EmptyBucket empties the Amazon S3 bucket and deletes it.
+/// EmptyBucket empties the Amazon S3 bucket and deletes it.
 func emptyAndDeleteBucket(bucket string) error {
 	log.Print("removing objects from S3 bucket : ", bucket)
+
 	params := &s3.ListObjectsInput{
 		Bucket: aws.String(bucket),
 	}
+
 	for {
-		//Requesting for batch of objects from s3 bucket
+		// Requesting for batch of objects from s3 bucket
 		objects, err := s3Client.ListObjects(params)
 		if err != nil {
 			break
 		}
-		//Checks if the bucket is already empty
+
+		// Checks if the bucket is already empty
 		if len((*objects).Contents) == 0 {
-			log.Print("Bucket is already empty")
+			log.Print("bucket is already empty")
 			return nil
 		}
-		log.Print("First object in batch | ", *(objects.Contents[0].Key))
+		log.Print("first object in batch | ", *(objects.Contents[0].Key))
 
-		//creating an array of pointers of ObjectIdentifier
+		// Creating an array of pointers of ObjectIdentifier
 		objectsToDelete := make([]*s3.ObjectIdentifier, 0, 1000)
 		for _, object := range (*objects).Contents {
 			obj := s3.ObjectIdentifier{
@@ -187,25 +198,31 @@ func emptyAndDeleteBucket(bucket string) error {
 			}
 			objectsToDelete = append(objectsToDelete, &obj)
 		}
-		//Creating JSON payload for bulk delete
+
+		// Creating JSON payload for bulk delete
 		deleteArray := s3.Delete{Objects: objectsToDelete}
 		deleteParams := &s3.DeleteObjectsInput{
 			Bucket: aws.String(bucket),
 			Delete: &deleteArray,
 		}
-		//Running the Bulk delete job (limit 1000)
+
+		// Running the Bulk delete job (limit 1000)
 		_, err = s3Client.DeleteObjects(deleteParams)
 		if err != nil {
 			return err
 		}
 		if *(*objects).IsTruncated { //if there are more objects in the bucket, IsTruncated = true
 			params.Marker = (*deleteParams).Delete.Objects[len((*deleteParams).Delete.Objects)-1].Key
-			log.Print("Requesting next batch | ", *(params.Marker))
-		} else { //if all objects in the bucket have been cleaned up.
+			log.Print("requesting next batch | ", *(params.Marker))
+		} else { // If all objects in the bucket have been cleaned up.
 			break
 		}
 	}
+
 	log.Print("Emptied S3 bucket : ", bucket)
-	s3Client.DeleteBucket(&s3.DeleteBucketInput{Bucket: aws.String(bucket)})
+	if _, err := s3Client.DeleteBucket(&s3.DeleteBucketInput{Bucket: aws.String(bucket)}); err != nil {
+		log.Printf("failed to DeleteBucket, %v", err)
+	}
+
 	return nil
 }

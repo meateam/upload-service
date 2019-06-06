@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -20,11 +21,8 @@ func (s BucketService) BucketExists(ctx aws.Context, bucket *string) bool {
 	}
 
 	_, err := s.s3Client.HeadBucketWithContext(ctx, input)
-	if err != nil {
-		return false
-	}
 
-	return true
+	return (err == nil)
 }
 
 // CreateBucket creates a bucket with the given bucket name and returns true or false

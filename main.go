@@ -43,7 +43,10 @@ func main() {
 		DisableSSL:       aws.Bool(true),
 		S3ForcePathStyle: aws.Bool(true),
 	}
-	newSession := session.New(s3Config)
+	newSession, err := session.NewSession(s3Config)
+	if err != nil {
+		logger.Fatalf("error creating a session: %v ", err)
+	}
 	logger.Infof("connected to S3 - %s", s3Endpoint)
 	s3Client := s3.New(newSession)
 	lis, err := net.Listen("tcp", ":"+tcpPort)
@@ -107,5 +110,7 @@ func main() {
 		}
 	}()
 	logger.Infof("serving grpc server on port %s", tcpPort)
-	grpcServer.Serve(lis)
+	if err := grpcServer.Serve(lis); err != nil {
+		logger.Fatalf("failed to serve on port %s with error: %v", tcpPort, err)
+	}
 }

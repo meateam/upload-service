@@ -30,13 +30,13 @@ func (s *UploadService) EnsureBucketExists(ctx aws.Context, bucket *string) erro
 	defer s.mu.Unlock()
 	bucketExists := bucketService.BucketExists(ctx, bucket)
 
-	if bucketExists == false {
+	if !bucketExists {
 		bucketExists, err := bucketService.CreateBucket(ctx, bucket)
 		if err != nil {
 			return fmt.Errorf("failed to create bucket %s: %v", *bucket, err)
 		}
 
-		if bucketExists == false {
+		if !bucketExists {
 			return fmt.Errorf("failed to create bucket %s: bucket does not exist", *bucket)
 		}
 	}
@@ -47,7 +47,14 @@ func (s *UploadService) EnsureBucketExists(ctx aws.Context, bucket *string) erro
 // UploadFile uploads a file to the given bucket and key in S3.
 // If metadata is a non-nil map then it will be uploaded with the file.
 // Returns the file's location and an error if any occurred.
-func (s *UploadService) UploadFile(ctx aws.Context, file io.Reader, key *string, bucket *string, contentType *string, metadata map[string]*string) (*string, error) {
+func (s *UploadService) UploadFile(
+	ctx aws.Context,
+	file io.Reader,
+	key *string,
+	bucket *string,
+	contentType *string,
+	metadata map[string]*string,
+) (*string, error) {
 	if file == nil {
 		return nil, fmt.Errorf("file is required")
 	}
@@ -97,7 +104,13 @@ func (s *UploadService) UploadFile(ctx aws.Context, file io.Reader, key *string,
 
 // UploadInit initiates a multipart upload to the given bucket and key in S3 with metadata.
 // File metadata is required for multipart upload.
-func (s *UploadService) UploadInit(ctx aws.Context, key *string, bucket *string, contentType *string, metadata map[string]*string) (*s3.CreateMultipartUploadOutput, error) {
+func (s *UploadService) UploadInit(
+	ctx aws.Context,
+	key *string,
+	bucket *string,
+	contentType *string,
+	metadata map[string]*string,
+) (*s3.CreateMultipartUploadOutput, error) {
 	if key == nil || *key == "" {
 		return nil, fmt.Errorf("key is required")
 	}
@@ -131,7 +144,14 @@ func (s *UploadService) UploadInit(ctx aws.Context, key *string, bucket *string,
 }
 
 // UploadPart uploads a part in a multipart upload of a file.
-func (s *UploadService) UploadPart(ctx aws.Context, uploadID *string, key *string, bucket *string, partNumber *int64, body io.ReadSeeker) (*s3.UploadPartOutput, error) {
+func (s *UploadService) UploadPart(
+	ctx aws.Context,
+	uploadID *string,
+	key *string,
+	bucket *string,
+	partNumber *int64,
+	body io.ReadSeeker,
+) (*s3.UploadPartOutput, error) {
 	if body == nil {
 		return nil, fmt.Errorf("part body is required")
 	}
@@ -182,7 +202,12 @@ func (s *UploadService) UploadPart(ctx aws.Context, uploadID *string, key *strin
 }
 
 // ListUploadParts lists the uploaded file parts of a multipart upload of a file.
-func (s *UploadService) ListUploadParts(ctx aws.Context, uploadID *string, key *string, bucket *string) (*s3.ListPartsOutput, error) {
+func (s *UploadService) ListUploadParts(
+	ctx aws.Context,
+	uploadID *string,
+	key *string,
+	bucket *string,
+) (*s3.ListPartsOutput, error) {
 	if key == nil || *key == "" {
 		return nil, fmt.Errorf("key is required")
 	}
@@ -220,7 +245,12 @@ func (s *UploadService) ListUploadParts(ctx aws.Context, uploadID *string, key *
 
 // UploadComplete completes a multipart upload by assembling previously uploaded parts
 // associated with uploadID.
-func (s *UploadService) UploadComplete(ctx aws.Context, uploadID *string, key *string, bucket *string) (*s3.CompleteMultipartUploadOutput, error) {
+func (s *UploadService) UploadComplete(
+	ctx aws.Context,
+	uploadID *string,
+	key *string,
+	bucket *string,
+) (*s3.CompleteMultipartUploadOutput, error) {
 	if key == nil || *key == "" {
 		return nil, fmt.Errorf("key is required")
 	}
@@ -347,7 +377,10 @@ type UploadHandler struct {
 
 // UploadMedia is the request handler for file upload, it is responsible for getting the file
 // from the request's body and uploading it to the bucket of the user who uploaded it
-func (h UploadHandler) UploadMedia(ctx context.Context, request *pb.UploadMediaRequest) (*pb.UploadMediaResponse, error) {
+func (h UploadHandler) UploadMedia(
+	ctx context.Context,
+	request *pb.UploadMediaRequest,
+) (*pb.UploadMediaResponse, error) {
 	location, err := h.UploadFile(ctx,
 		bytes.NewReader(request.GetFile()),
 		aws.String(request.GetKey()),
@@ -364,7 +397,10 @@ func (h UploadHandler) UploadMedia(ctx context.Context, request *pb.UploadMediaR
 
 // UploadMultipart is the request handler for file upload, it is responsible for getting the file
 // from the request's body and uploading it to the bucket of the user who uploaded it
-func (h UploadHandler) UploadMultipart(ctx context.Context, request *pb.UploadMultipartRequest) (*pb.UploadMultipartResponse, error) {
+func (h UploadHandler) UploadMultipart(
+	ctx context.Context,
+	request *pb.UploadMultipartRequest,
+) (*pb.UploadMultipartResponse, error) {
 	metadata := request.GetMetadata()
 	if len(metadata) == 0 {
 		return nil, fmt.Errorf("metadata is required")
@@ -385,7 +421,10 @@ func (h UploadHandler) UploadMultipart(ctx context.Context, request *pb.UploadMu
 }
 
 // UploadInit is the request handler for initiating resumable upload.
-func (h UploadHandler) UploadInit(ctx context.Context, request *pb.UploadInitRequest) (*pb.UploadInitResponse, error) {
+func (h UploadHandler) UploadInit(
+	ctx context.Context,
+	request *pb.UploadInitRequest,
+) (*pb.UploadInitResponse, error) {
 	result, err := h.UploadService.UploadInit(
 		ctx,
 		aws.String(request.GetKey()),
@@ -427,7 +466,7 @@ func (h UploadHandler) UploadPart(stream pb.Upload_UploadPartServer) error {
 		}
 
 		wg.Add(1)
-		go func() error {
+		go func() {
 			defer wg.Done()
 
 			result, err := h.UploadService.UploadPart(
@@ -452,15 +491,19 @@ func (h UploadHandler) UploadPart(stream pb.Upload_UploadPartServer) error {
 				}
 			}
 
-			err = stream.Send(resp)
-			return err
+			if err := stream.Send(resp); err != nil {
+				logger.Errorf("failed to send response in stream:  %v", err)
+			}
 		}()
 	}
 }
 
 // UploadComplete is the request handler for completing and assembling previously uploaded file parts.
 // Responds with the location of the assembled file.
-func (h UploadHandler) UploadComplete(ctx context.Context, request *pb.UploadCompleteRequest) (*pb.UploadCompleteResponse, error) {
+func (h UploadHandler) UploadComplete(
+	ctx context.Context,
+	request *pb.UploadCompleteRequest,
+) (*pb.UploadCompleteResponse, error) {
 	_, err := h.UploadService.UploadComplete(ctx,
 		aws.String(request.GetUploadId()),
 		aws.String(request.GetKey()),
@@ -478,7 +521,10 @@ func (h UploadHandler) UploadComplete(ctx context.Context, request *pb.UploadCom
 }
 
 // UploadAbort is the request handler for aborting and freeing previously uploaded parts.
-func (h UploadHandler) UploadAbort(ctx context.Context, request *pb.UploadAbortRequest) (*pb.UploadAbortResponse, error) {
+func (h UploadHandler) UploadAbort(
+	ctx context.Context,
+	request *pb.UploadAbortRequest,
+) (*pb.UploadAbortResponse, error) {
 	abortStatus, err := h.UploadService.UploadAbort(
 		ctx,
 		aws.String(request.GetUploadId()),
