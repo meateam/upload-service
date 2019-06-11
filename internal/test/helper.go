@@ -61,6 +61,7 @@ func EmptyAndDeleteBucket(s3Client *s3.S3, bucket string) error {
 	log.Print("Emptied S3 bucket : ", bucket)
 	if _, err := s3Client.DeleteBucket(&s3.DeleteBucketInput{Bucket: aws.String(bucket)}); err != nil {
 		log.Printf("failed to DeleteBucket, %v", err)
+		return err
 	}
 
 	return nil

@@ -51,8 +51,8 @@ type UploadServer struct {
 }
 
 // GetHandler returns a copy of the underlying upload handler.
-func (s *UploadServer) GetHandler() upload.Handler {
-	return *s.uploadHandler
+func (s *UploadServer) GetHandler() *upload.Handler {
+	return s.uploadHandler
 }
 
 // Serve accepts incoming connections on the listener `lis`, creating a new
