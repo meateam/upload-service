@@ -1,4 +1,4 @@
-package main
+package upload_test
 
 import (
 	"bytes"
@@ -8,17 +8,16 @@ import (
 	"io"
 	"log"
 	"net"
-	"os"
 	"reflect"
 	"testing"
-	"time"
 
 	pb "github.com/meateam/upload-service/proto"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/meateam/upload-service/internal/test"
+	"github.com/meateam/upload-service/server"
+	"github.com/meateam/upload-service/upload"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 )
@@ -26,42 +25,30 @@ import (
 const bufSize = 1024 * 1024
 
 // Declaring global variable.
-var lis *bufconn.Listener
+var (
+	lis        *bufconn.Listener
+	s3Client   *s3.S3
+	s3Endpoint string
+)
 
 func init() {
-	// Fetch env vars
-	s3AccessKey := os.Getenv("S3_ACCESS_KEY")
-	s3SecretKey := os.Getenv("S3_SECRET_KEY")
-	s3Endpoint = os.Getenv("S3_ENDPOINT")
-	s3Token := ""
-
-	// Configure to use S3 Server
-	s3Config := &aws.Config{
-		Credentials:      credentials.NewStaticCredentials(s3AccessKey, s3SecretKey, s3Token),
-		Endpoint:         aws.String(s3Endpoint),
-		Region:           aws.String("eu-east-1"),
-		DisableSSL:       aws.Bool(true),
-		S3ForcePathStyle: aws.Bool(true),
-	}
-
-	// Init real client.
-	newSession = session.New(s3Config)
-	s3Client = s3.New(newSession)
-
 	lis = bufconn.Listen(bufSize)
-	grpcServer := grpc.NewServer(grpc.MaxRecvMsgSize(5000 << 20))
-	server := &UploadHandler{UploadService: &UploadService{s3Client: s3Client}}
-	pb.RegisterUploadServer(grpcServer, server)
-	go func() {
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatalf("Server exited with error: %v", err)
-		}
-	}()
-	emptyAndDeleteBucket("testbucket")
-	emptyAndDeleteBucket("testbucket1")
+	uploadServer := server.NewServer()
+
+	s3Client = uploadServer.GetHandler().GetService().GetS3Client()
+	s3Endpoint = s3Client.Endpoint
+
+	go uploadServer.Serve(lis)
+
+	if err := test.EmptyAndDeleteBucket(s3Client, "testbucket"); err != nil {
+		log.Printf("test.EmptyAndDeleteBucket failed with error: %v", err)
+	}
+	if err := test.EmptyAndDeleteBucket(s3Client, "testbucket1"); err != nil {
+		log.Printf("test.EmptyAndDeleteBucket failed with error: %v", err)
+	}
 }
 
-func bufDialer(string, time.Duration) (net.Conn, error) {
+func bufDialer(context.Context, string) (net.Conn, error) {
 	return lis.Dial()
 }
 
@@ -184,11 +171,16 @@ func TestUploadService_UploadFile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := UploadService{
-				s3Client: tt.fields.s3Client,
-			}
+			s := upload.NewService(tt.fields.s3Client)
 
-			got, err := s.UploadFile(tt.args.ctx, tt.args.file, tt.args.key, tt.args.bucket, tt.args.contentType, tt.args.metadata)
+			got, err := s.UploadFile(
+				tt.args.ctx,
+				tt.args.file,
+				tt.args.key,
+				tt.args.bucket,
+				tt.args.contentType,
+				tt.args.metadata,
+			)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UploadService.UploadFile() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -203,13 +195,14 @@ func TestUploadService_UploadFile(t *testing.T) {
 
 func TestUploadHandler_UploadMedia(t *testing.T) {
 	hugefile := make([]byte, 5<<20)
-	rand.Read(hugefile)
-
-	uploadservice := &UploadService{
-		s3Client: s3Client,
+	if _, err := rand.Read(hugefile); err != nil {
+		t.Errorf("Could not generate file with error: %v", err)
 	}
+
+	uploadservice := upload.NewService(s3Client)
+
 	type fields struct {
-		UploadService *UploadService
+		UploadService *upload.Service
 	}
 	type args struct {
 		ctx     context.Context
@@ -305,7 +298,7 @@ func TestUploadHandler_UploadMedia(t *testing.T) {
 
 	// Create connection to server
 	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithDialer(bufDialer), grpc.WithInsecure())
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
 	if err != nil {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
@@ -464,9 +457,8 @@ func TestUploadService_UploadInit(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := UploadService{
-				s3Client: tt.fields.s3Client,
-			}
+			s := upload.NewService(tt.fields.s3Client)
+
 			got, err := s.UploadInit(tt.args.ctx, tt.args.key, tt.args.bucket, tt.args.contentType, tt.args.metadata)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UploadService.UploadInit() error = %v, wantErr %v", err, tt.wantErr)
@@ -482,11 +474,10 @@ func TestUploadService_UploadInit(t *testing.T) {
 func TestUploadHandler_UploadInit(t *testing.T) {
 	metadata := make(map[string]string)
 	metadata["test"] = "testt"
-	uploadservice := &UploadService{
-		s3Client: s3Client,
-	}
+	uploadservice := upload.NewService(s3Client)
+
 	type fields struct {
-		UploadService *UploadService
+		UploadService *upload.Service
 	}
 	type args struct {
 		ctx     context.Context
@@ -603,7 +594,7 @@ func TestUploadHandler_UploadInit(t *testing.T) {
 
 	// Create connection to server
 	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithDialer(bufDialer), grpc.WithInsecure())
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
 	if err != nil {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
@@ -619,18 +610,21 @@ func TestUploadHandler_UploadInit(t *testing.T) {
 				t.Errorf("UploadHandler.UploadInit() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) && &got.UploadId == nil {
+			if !reflect.DeepEqual(got, tt.want) && got.UploadId == "" {
 				t.Errorf("UploadHandler.UploadInit() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
+//nolint:gocyclo
 func TestUploadService_UploadPart(t *testing.T) {
 	metadata := make(map[string]*string)
 	metadata["test"] = aws.String("meta")
 	file := make([]byte, 50<<20)
-	rand.Read(file)
+	if _, err := rand.Read(file); err != nil {
+		t.Errorf("Could not generate file with error: %v", err)
+	}
 	fileReader := bytes.NewReader(file)
 
 	type fields struct {
@@ -822,16 +816,27 @@ func TestUploadService_UploadPart(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := UploadService{
-				s3Client: tt.fields.s3Client,
-			}
+			s := upload.NewService(tt.fields.s3Client)
 
-			initOutput, err := s.UploadInit(tt.args.ctx, tt.args.initKey, tt.args.initBucket, aws.String("text/plain"), metadata)
+			initOutput, err := s.UploadInit(
+				tt.args.ctx,
+				tt.args.initKey,
+				tt.args.initBucket,
+				aws.String("text/plain"),
+				metadata,
+			)
 			if err != nil {
 				t.Errorf("UploadService.UploadInit() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			got, err := s.UploadPart(tt.args.ctx, initOutput.UploadId, tt.args.key, tt.args.bucket, tt.args.partNumber, tt.args.body)
+			got, err := s.UploadPart(
+				tt.args.ctx,
+				initOutput.UploadId,
+				tt.args.key,
+				tt.args.bucket,
+				tt.args.partNumber,
+				tt.args.body,
+			)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UploadService.UploadPart() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -843,32 +848,42 @@ func TestUploadService_UploadPart(t *testing.T) {
 	}
 
 	t.Run("UploadPart - nil UploadID", func(t *testing.T) {
-		s := UploadService{
-			s3Client: s3Client,
-		}
+		s := upload.NewService(s3Client)
 
 		ctx := context.Background()
-		got, err := s.UploadPart(ctx, nil, aws.String("testfile10.txt"), aws.String("testbucket"), aws.Int64(1), fileReader)
+		got, err := s.UploadPart(
+			ctx,
+			nil,
+			aws.String("testfile10.txt"),
+			aws.String("testbucket"),
+			aws.Int64(1),
+			fileReader,
+		)
 		if err == nil {
 			t.Errorf("UploadService.UploadPart() error = %v, wantErr %v", err, true)
 			return
 		}
-		if (got == nil || got.ETag == nil || *got.ETag == "") && err == nil {
+		if got != nil && (got.ETag != nil || *got.ETag != "") {
 			t.Errorf("UploadService.UploadPart() = %v", got)
 		}
 	})
 	t.Run("UploadPart - empty UploadID", func(t *testing.T) {
-		s := UploadService{
-			s3Client: s3Client,
-		}
+		s := upload.NewService(s3Client)
 
 		ctx := context.Background()
-		got, err := s.UploadPart(ctx, aws.String(""), aws.String("testfile10.txt"), aws.String("testbucket"), aws.Int64(1), fileReader)
+		got, err := s.UploadPart(
+			ctx,
+			aws.String(""),
+			aws.String("testfile10.txt"),
+			aws.String("testbucket"),
+			aws.Int64(1),
+			fileReader,
+		)
 		if err == nil {
 			t.Errorf("UploadService.UploadPart() error = %v, wantErr %v", err, true)
 			return
 		}
-		if (got == nil || got.ETag == nil || *got.ETag == "") && err == nil {
+		if got != nil && (got.ETag != nil || *got.ETag != "") {
 			t.Errorf("UploadService.UploadPart() = %v", got)
 		}
 	})
@@ -878,7 +893,9 @@ func TestUploadService_UploadComplete(t *testing.T) {
 	metadata := make(map[string]*string)
 	metadata["test"] = aws.String("meta")
 	file := make([]byte, 50<<20)
-	rand.Read(file)
+	if _, err := rand.Read(file); err != nil {
+		t.Errorf("Could not generate file with error: %v", err)
+	}
 	fileReader := bytes.NewReader(file)
 
 	type fields struct {
@@ -996,11 +1013,15 @@ func TestUploadService_UploadComplete(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := UploadService{
-				s3Client: tt.fields.s3Client,
-			}
+			s := upload.NewService(tt.fields.s3Client)
 
-			initOutput, err := s.UploadInit(tt.args.ctx, tt.args.initKey, tt.args.initBucket, aws.String("text/plain"), metadata)
+			initOutput, err := s.UploadInit(
+				tt.args.ctx,
+				tt.args.initKey,
+				tt.args.initBucket,
+				aws.String("text/plain"),
+				metadata,
+			)
 			if err != nil {
 				t.Errorf("UploadService.UploadInit() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1030,9 +1051,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 		})
 	}
 	t.Run("UploadComplete - empty uploadID ", func(t *testing.T) {
-		s := UploadService{
-			s3Client: s3Client,
-		}
+		s := upload.NewService(s3Client)
 
 		ctx := context.Background()
 		got, err := s.UploadComplete(ctx, aws.String(""), aws.String("tests.txt"), aws.String("testbucket"))
@@ -1040,16 +1059,14 @@ func TestUploadService_UploadComplete(t *testing.T) {
 			t.Errorf("UploadService.UploadComplete() error = %v, wantErr %v", err, true)
 			return
 		}
-		if got != nil && err != nil {
+		if got != nil {
 			t.Errorf("UploadService.UploadComplete() = %v", got)
 			return
 		}
 	})
 
 	t.Run("UploadComplete - nil uploadID ", func(t *testing.T) {
-		s := UploadService{
-			s3Client: s3Client,
-		}
+		s := upload.NewService(s3Client)
 
 		ctx := context.Background()
 		got, err := s.UploadComplete(ctx, nil, aws.String("tests.txt"), aws.String("testbucket"))
@@ -1057,7 +1074,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 			t.Errorf("UploadService.UploadComplete() error = %v, wantErr %v", err, true)
 			return
 		}
-		if got != nil && err != nil {
+		if got != nil {
 			t.Errorf("UploadService.UploadComplete() = %v", got)
 			return
 		}
@@ -1067,7 +1084,9 @@ func TestUploadService_UploadComplete(t *testing.T) {
 func TestUploadHandler_UploadMultipart(t *testing.T) {
 	// Init global values to use in tests.
 	file := make([]byte, 5<<20)
-	rand.Read(file)
+	if _, err := rand.Read(file); err != nil {
+		t.Errorf("Could not generate file with error: %v", err)
+	}
 	metadata := make(map[string]string)
 	metadata["test"] = "testt"
 
@@ -1209,7 +1228,7 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 
 	// Create connection to server
 	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithDialer(bufDialer), grpc.WithInsecure())
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
 	if err != nil {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
@@ -1236,7 +1255,9 @@ func TestUploadService_UploadAbort(t *testing.T) {
 	metadata := make(map[string]*string)
 	metadata["test"] = aws.String("testt")
 	file := make([]byte, 50<<20)
-	rand.Read(file)
+	if _, err := rand.Read(file); err != nil {
+		t.Errorf("Could not generate file with error: %v", err)
+	}
 	fileReader := bytes.NewReader(file)
 	type fields struct {
 		s3Client *s3.S3
@@ -1267,9 +1288,7 @@ func TestUploadService_UploadAbort(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := UploadService{
-				s3Client: tt.fields.s3Client,
-			}
+			s := upload.NewService(tt.fields.s3Client)
 
 			initOutput, err := s.UploadInit(tt.args.ctx, tt.args.key, tt.args.bucket, aws.String("text/plain"), metadata)
 			if err != nil {
@@ -1277,7 +1296,14 @@ func TestUploadService_UploadAbort(t *testing.T) {
 				return
 			}
 
-			_, err = s.UploadPart(tt.args.ctx, initOutput.UploadId, tt.args.key, tt.args.bucket, aws.Int64(1), fileReader)
+			_, err = s.UploadPart(
+				tt.args.ctx,
+				initOutput.UploadId,
+				tt.args.key,
+				tt.args.bucket,
+				aws.Int64(1),
+				fileReader,
+			)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UploadService.UploadPart() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1295,101 +1321,6 @@ func TestUploadService_UploadAbort(t *testing.T) {
 	}
 }
 
-// TODO:
-func TestUploadHandler_UploadAbort(t *testing.T) {
-	type fields struct {
-		UploadService *UploadService
-	}
-	type args struct {
-		ctx     context.Context
-		request *pb.UploadAbortRequest
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    *pb.UploadAbortResponse
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := UploadHandler{
-				UploadService: tt.fields.UploadService,
-			}
-			got, err := h.UploadAbort(tt.args.ctx, tt.args.request)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("UploadHandler.UploadAbort() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("UploadHandler.UploadAbort() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-// TODO:
-func TestUploadHandler_UploadComplete(t *testing.T) {
-	type fields struct {
-		UploadService *UploadService
-	}
-	type args struct {
-		ctx     context.Context
-		request *pb.UploadCompleteRequest
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    *pb.UploadCompleteResponse
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := UploadHandler{
-				UploadService: tt.fields.UploadService,
-			}
-			got, err := h.UploadComplete(tt.args.ctx, tt.args.request)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("UploadHandler.UploadComplete() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("UploadHandler.UploadComplete() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-// TODO:
-
-func TestUploadHandler_UploadPart(t *testing.T) {
-	type fields struct {
-		UploadService *UploadService
-	}
-	type args struct {
-		stream pb.Upload_UploadPartServer
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := UploadHandler{
-				UploadService: tt.fields.UploadService,
-			}
-			if err := h.UploadPart(tt.args.stream); (err != nil) != tt.wantErr {
-				t.Errorf("UploadHandler.UploadPart() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
+// TODO: TestUploadHandler_UploadAbort
+// TODO: TestUploadHandler_UploadComplete
+// TODO: TestUploadHandler_UploadPart
