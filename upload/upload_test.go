@@ -1,4 +1,4 @@
-package main
+package upload_test
 
 import (
 	"bytes"
@@ -8,16 +8,16 @@ import (
 	"io"
 	"log"
 	"net"
-	"os"
 	"reflect"
 	"testing"
 
 	pb "github.com/meateam/upload-service/proto"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/meateam/upload-service/internal/test"
+	"github.com/meateam/upload-service/server"
+	"github.com/meateam/upload-service/upload"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 )
@@ -25,45 +25,26 @@ import (
 const bufSize = 1024 * 1024
 
 // Declaring global variable.
-var lis *bufconn.Listener
+var (
+	lis        *bufconn.Listener
+	s3Client   *s3.S3
+	s3Endpoint string
+)
 
 func init() {
-	// Fetch env vars
-	s3AccessKey := os.Getenv("S3_ACCESS_KEY")
-	s3SecretKey := os.Getenv("S3_SECRET_KEY")
-	s3Endpoint = os.Getenv("S3_ENDPOINT")
-	s3Token := ""
-
-	// Configure to use S3 Server
-	s3Config := &aws.Config{
-		Credentials:      credentials.NewStaticCredentials(s3AccessKey, s3SecretKey, s3Token),
-		Endpoint:         aws.String(s3Endpoint),
-		Region:           aws.String("eu-east-1"),
-		DisableSSL:       aws.Bool(true),
-		S3ForcePathStyle: aws.Bool(true),
-	}
-
-	// Init real client.
-	newSession, err := session.NewSession(s3Config)
-	if err != nil {
-		logger.Fatalf(err.Error())
-	}
-	s3Client = s3.New(newSession)
-
 	lis = bufconn.Listen(bufSize)
-	grpcServer := grpc.NewServer(grpc.MaxRecvMsgSize(5000 << 20))
-	server := &UploadHandler{UploadService: &UploadService{s3Client: s3Client}}
-	pb.RegisterUploadServer(grpcServer, server)
-	go func() {
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatalf("Server exited with error: %v", err)
-		}
-	}()
-	if err := emptyAndDeleteBucket("testbucket"); err != nil {
-		log.Printf("emptyAndDeleteBucket failed with error: %v", err)
+	uploadServer := server.NewServer()
+
+	s3Client = uploadServer.GetHandler().GetService().GetS3Client()
+	s3Endpoint = s3Client.Endpoint
+
+	go uploadServer.Serve(lis)
+
+	if err := test.EmptyAndDeleteBucket(s3Client, "testbucket"); err != nil {
+		log.Printf("test.EmptyAndDeleteBucket failed with error: %v", err)
 	}
-	if err := emptyAndDeleteBucket("testbucket1"); err != nil {
-		log.Printf("emptyAndDeleteBucket failed with error: %v", err)
+	if err := test.EmptyAndDeleteBucket(s3Client, "testbucket1"); err != nil {
+		log.Printf("test.EmptyAndDeleteBucket failed with error: %v", err)
 	}
 }
 
@@ -190,9 +171,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := UploadService{
-				s3Client: tt.fields.s3Client,
-			}
+			s := upload.NewService(tt.fields.s3Client)
 
 			got, err := s.UploadFile(
 				tt.args.ctx,
@@ -220,11 +199,10 @@ func TestUploadHandler_UploadMedia(t *testing.T) {
 		t.Errorf("Could not generate file with error: %v", err)
 	}
 
-	uploadservice := &UploadService{
-		s3Client: s3Client,
-	}
+	uploadservice := upload.NewService(s3Client)
+
 	type fields struct {
-		UploadService *UploadService
+		UploadService *upload.Service
 	}
 	type args struct {
 		ctx     context.Context
@@ -479,9 +457,8 @@ func TestUploadService_UploadInit(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := UploadService{
-				s3Client: tt.fields.s3Client,
-			}
+			s := upload.NewService(tt.fields.s3Client)
+
 			got, err := s.UploadInit(tt.args.ctx, tt.args.key, tt.args.bucket, tt.args.contentType, tt.args.metadata)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UploadService.UploadInit() error = %v, wantErr %v", err, tt.wantErr)
@@ -497,11 +474,10 @@ func TestUploadService_UploadInit(t *testing.T) {
 func TestUploadHandler_UploadInit(t *testing.T) {
 	metadata := make(map[string]string)
 	metadata["test"] = "testt"
-	uploadservice := &UploadService{
-		s3Client: s3Client,
-	}
+	uploadservice := upload.NewService(s3Client)
+
 	type fields struct {
-		UploadService *UploadService
+		UploadService *upload.Service
 	}
 	type args struct {
 		ctx     context.Context
@@ -840,9 +816,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := UploadService{
-				s3Client: tt.fields.s3Client,
-			}
+			s := upload.NewService(tt.fields.s3Client)
 
 			initOutput, err := s.UploadInit(
 				tt.args.ctx,
@@ -874,9 +848,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 	}
 
 	t.Run("UploadPart - nil UploadID", func(t *testing.T) {
-		s := UploadService{
-			s3Client: s3Client,
-		}
+		s := upload.NewService(s3Client)
 
 		ctx := context.Background()
 		got, err := s.UploadPart(
@@ -896,9 +868,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 		}
 	})
 	t.Run("UploadPart - empty UploadID", func(t *testing.T) {
-		s := UploadService{
-			s3Client: s3Client,
-		}
+		s := upload.NewService(s3Client)
 
 		ctx := context.Background()
 		got, err := s.UploadPart(
@@ -1043,9 +1013,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := UploadService{
-				s3Client: tt.fields.s3Client,
-			}
+			s := upload.NewService(tt.fields.s3Client)
 
 			initOutput, err := s.UploadInit(
 				tt.args.ctx,
@@ -1083,9 +1051,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 		})
 	}
 	t.Run("UploadComplete - empty uploadID ", func(t *testing.T) {
-		s := UploadService{
-			s3Client: s3Client,
-		}
+		s := upload.NewService(s3Client)
 
 		ctx := context.Background()
 		got, err := s.UploadComplete(ctx, aws.String(""), aws.String("tests.txt"), aws.String("testbucket"))
@@ -1100,9 +1066,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 	})
 
 	t.Run("UploadComplete - nil uploadID ", func(t *testing.T) {
-		s := UploadService{
-			s3Client: s3Client,
-		}
+		s := upload.NewService(s3Client)
 
 		ctx := context.Background()
 		got, err := s.UploadComplete(ctx, nil, aws.String("tests.txt"), aws.String("testbucket"))
@@ -1324,9 +1288,7 @@ func TestUploadService_UploadAbort(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := UploadService{
-				s3Client: tt.fields.s3Client,
-			}
+			s := upload.NewService(tt.fields.s3Client)
 
 			initOutput, err := s.UploadInit(tt.args.ctx, tt.args.key, tt.args.bucket, aws.String("text/plain"), metadata)
 			if err != nil {
