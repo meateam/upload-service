@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"reflect"
@@ -18,6 +19,7 @@ import (
 	"github.com/meateam/upload-service/internal/test"
 	"github.com/meateam/upload-service/server"
 	"github.com/meateam/upload-service/upload"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 )
@@ -26,6 +28,7 @@ const bufSize = 1024 * 1024
 
 // Declaring global variable.
 var (
+	logger     = logrus.New()
 	lis        *bufconn.Listener
 	s3Client   *s3.S3
 	s3Endpoint string
@@ -33,7 +36,10 @@ var (
 
 func init() {
 	lis = bufconn.Listen(bufSize)
-	uploadServer := server.NewServer()
+
+	// Disable log output.
+	logger.SetOutput(ioutil.Discard)
+	uploadServer := server.NewServer(logger)
 
 	s3Client = uploadServer.GetHandler().GetService().GetS3Client()
 	s3Endpoint = s3Client.Endpoint

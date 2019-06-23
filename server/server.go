@@ -95,7 +95,7 @@ func (s UploadServer) Serve(lis net.Listener) {
 // `S3_REGION`: S3 ergion of s3 backend to connect to.
 // `S3_SSL`: Enable or Disable SSL on S3 connection.
 // `TCP_PORT`: TCP port on which the grpc server would serve on.
-func NewServer() *UploadServer {
+func NewServer(logger *logrus.Logger) *UploadServer {
 	// Configuration variables
 	s3AccessKey := viper.GetString(configS3AccessKey)
 	s3SecretKey := viper.GetString(configS3SecretKey)
@@ -113,7 +113,9 @@ func NewServer() *UploadServer {
 		S3ForcePathStyle: aws.Bool(true),
 	}
 
-	logger := ilogger.NewLogger()
+	if logger == nil {
+		logger = ilogger.NewLogger()
+	}
 
 	// Open a session to s3.
 	newSession, err := session.NewSession(s3Config)
