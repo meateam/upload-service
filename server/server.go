@@ -2,7 +2,7 @@ package server
 
 import (
 	"net"
-	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -28,6 +28,8 @@ const (
 	configS3Token              = "s3_token"
 	configS3AccessKey          = "s3_access_key"
 	configS3SecretKey          = "s3_secret_key"
+	configS3Region             = "s3_region"
+	configS3SSL                = "s3_ssl"
 )
 
 func init() {
@@ -38,6 +40,8 @@ func init() {
 	viper.SetDefault(configS3Token, "")
 	viper.SetDefault(configS3AccessKey, "")
 	viper.SetDefault(configS3SecretKey, "")
+	viper.SetDefault(configS3Region, "us-east-1")
+	viper.SetDefault(configS3SSL, false)
 	viper.AutomaticEnv()
 }
 
@@ -87,24 +91,32 @@ func (s UploadServer) Serve(lis net.Listener) {
 // `S3_ACCESS_KEY`: S3 accress key to connect with s3 backend.
 // `S3_SECRET_KEY`: S3 secret key to connect with s3 backend.
 // `S3_ENDPOINT`: S3 endpoint of s3 backend to connect to.
+// `S3_TOKEN`: S3 token of s3 backend to connect to.
+// `S3_REGION`: S3 ergion of s3 backend to connect to.
+// `S3_SSL`: Enable or Disable SSL on S3 connection.
 // `TCP_PORT`: TCP port on which the grpc server would serve on.
-func NewServer() *UploadServer {
+func NewServer(logger *logrus.Logger) *UploadServer {
 	// Configuration variables
 	s3AccessKey := viper.GetString(configS3AccessKey)
 	s3SecretKey := viper.GetString(configS3SecretKey)
 	s3Endpoint := viper.GetString(configS3Endpoint)
 	s3Token := viper.GetString(configS3Token)
+	s3Region := viper.GetString(configS3Region)
+	s3SSL := viper.GetBool(configS3SSL)
 
 	// Configure to use S3 Server
 	s3Config := &aws.Config{
 		Credentials:      credentials.NewStaticCredentials(s3AccessKey, s3SecretKey, s3Token),
 		Endpoint:         aws.String(s3Endpoint),
-		Region:           aws.String("eu-east-1"),
-		DisableSSL:       aws.Bool(true),
+		Region:           aws.String(s3Region),
+		DisableSSL:       aws.Bool(!s3SSL),
 		S3ForcePathStyle: aws.Bool(true),
 	}
 
-	logger := ilogger.NewLogger()
+	// If no logger is given, create a new default logger for the server.
+	if logger == nil {
+		logger = ilogger.NewLogger()
+	}
 
 	// Open a session to s3.
 	newSession, err := session.NewSession(s3Config)
@@ -157,17 +169,21 @@ func serverLoggerInterceptor(logger *logrus.Logger) []grpc.ServerOption {
 	logrusEntry := logrus.NewEntry(logger)
 
 	ignorePayload := ilogger.IgnoreServerMethodsDecider(
-		"/upload.Upload/UploadMedia",
-		"/upload.Upload/UploadMultipart",
-		"/upload.Upload/UploadPart",
-		os.Getenv("ELASTIC_APM_IGNORE_URLS"),
+		append(
+			strings.Split(viper.GetString(configElasticAPMIgnoreURLS), ","),
+			"/upload.Upload/UploadMedia",
+			"/upload.Upload/UploadMultipart",
+			"/upload.Upload/UploadPart",
+		)...,
 	)
 
 	ignoreInitialRequest := ilogger.IgnoreServerMethodsDecider(
-		"/upload.Upload/UploadMedia",
-		"/upload.Upload/UploadMultipart",
-		"/upload.Upload/UploadPart",
-		os.Getenv("ELASTIC_APM_IGNORE_URLS"),
+		append(
+			strings.Split(viper.GetString(configElasticAPMIgnoreURLS), ","),
+			"/upload.Upload/UploadMedia",
+			"/upload.Upload/UploadMultipart",
+			"/upload.Upload/UploadPart",
+		)...,
 	)
 
 	// Shared options for the logger, with a custom gRPC code to log level function.

@@ -2,6 +2,8 @@ package bucket
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -32,8 +34,13 @@ func (s Service) BucketExists(ctx aws.Context, bucket *string) bool {
 // CreateBucket creates a bucket with the given bucket name and returns true or false
 // if it's created or not, returns an error if it didn't.
 func (s Service) CreateBucket(ctx aws.Context, bucket *string) (bool, error) {
+	if bucket == nil {
+		return false, fmt.Errorf("bucket is nil")
+	}
+
+	normalizedBucketName := normalizeCephBucketName(*bucket)
 	cparams := &s3.CreateBucketInput{
-		Bucket: bucket, // Required
+		Bucket: aws.String(normalizedBucketName), // Required
 	}
 
 	// Create a new bucket using the CreateBucket call.
@@ -43,4 +50,14 @@ func (s Service) CreateBucket(ctx aws.Context, bucket *string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// normalizeCephBucketName gets a bucket name and normalizes it
+// according to ceph s3's constraints.
+func normalizeCephBucketName(bucketName string) string {
+	lowerCaseBucketName := strings.ToLower(bucketName)
+
+	// Make a Regex for catching only letters and numbers.
+	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
+	return reg.ReplaceAllString(lowerCaseBucketName, "-")
 }
