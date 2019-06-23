@@ -113,6 +113,7 @@ func NewServer(logger *logrus.Logger) *UploadServer {
 		S3ForcePathStyle: aws.Bool(true),
 	}
 
+	// If no logger is given, create a new default logger for the server.
 	if logger == nil {
 		logger = ilogger.NewLogger()
 	}
