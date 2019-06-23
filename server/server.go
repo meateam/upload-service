@@ -28,6 +28,8 @@ const (
 	configS3Token              = "s3_token"
 	configS3AccessKey          = "s3_access_key"
 	configS3SecretKey          = "s3_secret_key"
+	configS3Region             = "s3_region"
+	configS3SSL                = "s3_ssl"
 )
 
 func init() {
@@ -38,6 +40,8 @@ func init() {
 	viper.SetDefault(configS3Token, "")
 	viper.SetDefault(configS3AccessKey, "")
 	viper.SetDefault(configS3SecretKey, "")
+	viper.SetDefault(configS3Region, "us-east-1")
+	viper.SetDefault(configS3SSL, false)
 	viper.AutomaticEnv()
 }
 
@@ -94,13 +98,15 @@ func NewServer() *UploadServer {
 	s3SecretKey := viper.GetString(configS3SecretKey)
 	s3Endpoint := viper.GetString(configS3Endpoint)
 	s3Token := viper.GetString(configS3Token)
+	s3Region := viper.GetString(configS3Region)
+	s3SSL := viper.GetBool(configS3SSL)
 
 	// Configure to use S3 Server
 	s3Config := &aws.Config{
 		Credentials:      credentials.NewStaticCredentials(s3AccessKey, s3SecretKey, s3Token),
 		Endpoint:         aws.String(s3Endpoint),
-		Region:           aws.String("eu-east-1"),
-		DisableSSL:       aws.Bool(true),
+		Region:           aws.String(s3Region),
+		DisableSSL:       aws.Bool(!s3SSL),
 		S3ForcePathStyle: aws.Bool(true),
 	}
 
