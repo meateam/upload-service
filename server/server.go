@@ -2,7 +2,7 @@ package server
 
 import (
 	"net"
-	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -166,17 +166,21 @@ func serverLoggerInterceptor(logger *logrus.Logger) []grpc.ServerOption {
 	logrusEntry := logrus.NewEntry(logger)
 
 	ignorePayload := ilogger.IgnoreServerMethodsDecider(
-		"/upload.Upload/UploadMedia",
-		"/upload.Upload/UploadMultipart",
-		"/upload.Upload/UploadPart",
-		os.Getenv("ELASTIC_APM_IGNORE_URLS"),
+		append(
+			strings.Split(viper.GetString(configElasticAPMIgnoreURLS), ","),
+			"/upload.Upload/UploadMedia",
+			"/upload.Upload/UploadMultipart",
+			"/upload.Upload/UploadPart",
+		)...,
 	)
 
 	ignoreInitialRequest := ilogger.IgnoreServerMethodsDecider(
-		"/upload.Upload/UploadMedia",
-		"/upload.Upload/UploadMultipart",
-		"/upload.Upload/UploadPart",
-		os.Getenv("ELASTIC_APM_IGNORE_URLS"),
+		append(
+			strings.Split(viper.GetString(configElasticAPMIgnoreURLS), ","),
+			"/upload.Upload/UploadMedia",
+			"/upload.Upload/UploadMultipart",
+			"/upload.Upload/UploadPart",
+		)...,
 	)
 
 	// Shared options for the logger, with a custom gRPC code to log level function.
