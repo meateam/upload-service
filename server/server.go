@@ -91,6 +91,9 @@ func (s UploadServer) Serve(lis net.Listener) {
 // `S3_ACCESS_KEY`: S3 accress key to connect with s3 backend.
 // `S3_SECRET_KEY`: S3 secret key to connect with s3 backend.
 // `S3_ENDPOINT`: S3 endpoint of s3 backend to connect to.
+// `S3_TOKEN`: S3 token of s3 backend to connect to.
+// `S3_REGION`: S3 ergion of s3 backend to connect to.
+// `S3_SSL`: Enable or Disable SSL on S3 connection.
 // `TCP_PORT`: TCP port on which the grpc server would serve on.
 func NewServer() *UploadServer {
 	// Configuration variables
