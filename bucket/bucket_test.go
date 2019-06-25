@@ -47,6 +47,9 @@ func init() {
 	if err := test.EmptyAndDeleteBucket(s3Client, "testbucket1"); err != nil {
 		log.Printf("test.EmptyAndDeleteBucket failed with error: %v", err)
 	}
+	if err := test.EmptyAndDeleteBucket(s3Client, "t874777-omer"); err != nil {
+		log.Printf("test.EmptyAndDeleteBucket failed with error: %v", err)
+	}
 }
 
 func TestBucketService_CreateBucket(t *testing.T) {
@@ -91,6 +94,25 @@ func TestBucketService_CreateBucket(t *testing.T) {
 				bucket: nil,
 			},
 			wantErr: true,
+		},
+		{
+			name:   "create bucket - empty bucket",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				ctx:    context.Background(),
+				bucket: aws.String(""),
+			},
+			wantErr: true,
+		},
+		{
+			name:   "create bucket - invalid bucket",
+			fields: fields{s3Client: s3Client},
+			args: args{
+				ctx:    context.Background(),
+				bucket: aws.String("T874777@omer"),
+			},
+			wantErr: false,
+			want:    true,
 		},
 	}
 	for _, tt := range tests {
