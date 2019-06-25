@@ -119,7 +119,7 @@ func NewServer() *UploadServer {
 	// Set up grpc server opts with logger interceptor.
 	serverOpts := append(
 		serverLoggerInterceptor(logger),
-		grpc.MaxRecvMsgSize(10<<20),
+		grpc.MaxRecvMsgSize(5120<<20),
 	)
 
 	grpcServer := grpc.NewServer(
