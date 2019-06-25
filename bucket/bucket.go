@@ -22,8 +22,13 @@ func NewService(s3Client *s3.S3) *Service {
 // BucketExists returns true if a bucket exists and the S3Client has permission
 // to access it, false otherwise.
 func (s Service) BucketExists(ctx aws.Context, bucket *string) bool {
+	if bucket == nil {
+		return false
+	}
+
+	normalizedBucketName := normalizeCephBucketName(*bucket)
 	input := &s3.HeadBucketInput{
-		Bucket: bucket,
+		Bucket: aws.String(normalizedBucketName),
 	}
 
 	_, err := s.s3Client.HeadBucketWithContext(ctx, input)
