@@ -194,14 +194,11 @@ func serverLoggerInterceptor(logger *logrus.Logger) []grpc.ServerOption {
 		grpc_logrus.WithLevels(grpc_logrus.DefaultCodeToLevel),
 	}
 
-	return append(
-		ilogger.ElasticsearchLoggerServerInterceptor(
-			logrusEntry,
-			ignorePayload,
-			ignoreInitialRequest,
-			loggerOpts...,
-		),
-		grpc.MaxRecvMsgSize(5120<<20),
+	return ilogger.ElasticsearchLoggerServerInterceptor(
+		logrusEntry,
+		ignorePayload,
+		ignoreInitialRequest,
+		loggerOpts...,
 	)
 }
 
