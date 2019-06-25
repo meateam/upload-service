@@ -131,7 +131,7 @@ func NewServer(logger *logrus.Logger) *UploadServer {
 	// Set up grpc server opts with logger interceptor.
 	serverOpts := append(
 		serverLoggerInterceptor(logger),
-		grpc.MaxRecvMsgSize(10<<20),
+		grpc.MaxRecvMsgSize(5120<<20),
 	)
 
 	grpcServer := grpc.NewServer(
@@ -194,14 +194,11 @@ func serverLoggerInterceptor(logger *logrus.Logger) []grpc.ServerOption {
 		grpc_logrus.WithLevels(grpc_logrus.DefaultCodeToLevel),
 	}
 
-	return append(
-		ilogger.ElasticsearchLoggerServerInterceptor(
-			logrusEntry,
-			ignorePayload,
-			ignoreInitialRequest,
-			loggerOpts...,
-		),
-		grpc.MaxRecvMsgSize(5120<<20),
+	return ilogger.ElasticsearchLoggerServerInterceptor(
+		logrusEntry,
+		ignorePayload,
+		ignoreInitialRequest,
+		loggerOpts...,
 	)
 }
 
