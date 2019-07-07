@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -17,6 +18,7 @@ import (
 // Declaring global variables.
 var s3Endpoint string
 var s3Client *s3.S3
+var mu sync.Mutex
 
 func init() {
 	// Fetch env vars
@@ -118,7 +120,9 @@ func TestBucketService_CreateBucket(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := bucket.NewService(tt.fields.s3Client)
+			mu.Lock()
 			got, err := s.CreateBucket(tt.args.ctx, tt.args.bucket)
+			mu.Unlock()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("BucketService.CreateBucket() error = %v, wantErr %v", err, tt.wantErr)
 				return
