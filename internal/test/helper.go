@@ -25,7 +25,7 @@ func EmptyAndDeleteBucket(s3Client *s3.S3, bucket string) error {
 		// Checks if the bucket is already empty
 		if len((*objects).Contents) == 0 {
 			log.Print("bucket is already empty")
-			return nil
+			break
 		}
 		log.Print("first object in batch | ", *(objects.Contents[0].Key))
 

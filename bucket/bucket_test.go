@@ -43,6 +43,7 @@ func init() {
 	}
 	s3Client = s3.New(newSession)
 
+	mu.Lock()
 	if err := test.EmptyAndDeleteBucket(s3Client, "testbucket"); err != nil {
 		log.Printf("test.EmptyAndDeleteBucket failed with error: %v", err)
 	}
@@ -52,6 +53,7 @@ func init() {
 	if err := test.EmptyAndDeleteBucket(s3Client, "t874777-omer"); err != nil {
 		log.Printf("test.EmptyAndDeleteBucket failed with error: %v", err)
 	}
+	mu.Unlock()
 }
 
 func TestBucketService_CreateBucket(t *testing.T) {
@@ -131,15 +133,17 @@ func TestBucketService_CreateBucket(t *testing.T) {
 				t.Errorf("BucketService.CreateBucket() = %v, want %v", got, tt.want)
 			}
 		})
+
 	}
 }
 func TestBucketService_BucketExists(t *testing.T) {
 	s := bucket.NewService(s3Client)
 
+	mu.Lock()
 	if _, err := s.CreateBucket(context.Background(), aws.String("testbucket")); err != nil {
 		log.Printf("CreateBucket failed with error: %v", err)
 	}
-
+	mu.Unlock()
 	type fields struct {
 		s3Client *s3.S3
 	}
@@ -172,7 +176,7 @@ func TestBucketService_BucketExists(t *testing.T) {
 			want: false,
 		},
 		{
-			name:   "Bucket Exists",
+			name:   "Bucket nil",
 			fields: fields{s3Client: s3Client},
 			args: args{
 				ctx:    context.Background(),
