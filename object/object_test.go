@@ -1,4 +1,4 @@
-package upload_test
+package object_test
 
 import (
 	"bytes"
@@ -17,8 +17,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/meateam/upload-service/internal/test"
+	"github.com/meateam/upload-service/object"
 	"github.com/meateam/upload-service/server"
-	"github.com/meateam/upload-service/upload"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"

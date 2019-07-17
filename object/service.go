@@ -1,4 +1,4 @@
-package upload
+package object
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"github.com/meateam/upload-service/bucket"
 )
 
-// Service is a structure used for uploading files to S3
+// Service is a structure used for operations on S3 objects.
 type Service struct {
 	s3Client *s3.S3
 	mu       sync.Mutex

@@ -1,4 +1,4 @@
-package upload
+package object
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ import (
 	pb "github.com/meateam/upload-service/proto"
 )
 
-// Handler handles upload requests by uploading the file's data to aws-s3 Object Storage
+// Handler handles object operation requests by uploading the file's data to aws-s3 Object Storage.
 type Handler struct {
 	service *Service
 	logger  *logrus.Logger
