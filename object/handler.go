@@ -191,3 +191,31 @@ func (h Handler) UploadAbort(
 
 	return &pb.UploadAbortResponse{Status: abortStatus}, nil
 }
+
+// DeleteObjects is the request handler for deleting objects.
+// It responds with a slice of deleted object keys and a slice of failed object keys.
+func (h Handler) DeleteObjects(
+	ctx context.Context,
+	request *pb.DeleteObjectsRequest,
+) (*pb.DeleteObjectsResponse, error) {
+	deleteResponse, err := h.service.DeleteObjects(
+		ctx,
+		aws.String(request.GetBucket()),
+		aws.StringSlice(request.GetKeys()),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	deleted := make([]string, 0, len(deleteResponse.Deleted))
+	for _, deletedObject := range deleteResponse.Deleted {
+		deleted = append(deleted, *(deletedObject.Key))
+	}
+
+	failed := make([]string, 0, len(deleteResponse.Errors))
+	for _, erroredObject := range deleteResponse.Errors {
+		failed = append(failed, *(erroredObject.Key))
+	}
+
+	return &pb.DeleteObjectsResponse{Deleted: deleted, Failed: failed}, nil
+}
