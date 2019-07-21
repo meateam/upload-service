@@ -1441,6 +1441,7 @@ func TestService_DeleteObjects(t *testing.T) {
 				bucket: aws.String("testbucket"),
 				ctx:    context.Background(),
 			},
+			// as S3 behave, if the key doesnt exist it'll be returned as removed.
 			wantSuccess: []string{"oneoneone"},
 			wantFailed:  []string{},
 			wantErr:     false,
@@ -1510,19 +1511,19 @@ func TestService_DeleteObjects(t *testing.T) {
 				t.Errorf("Service.DeleteObjects() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			deleted := make([]string, 0)
+			deletedKeys := make([]string, 0)
 			if got != nil && got.Deleted != nil {
 				for _, deletedObject := range got.Deleted {
-					deleted = append(deleted, *(deletedObject.Key))
+					deletedKeys = append(deletedKeys, *(deletedObject.Key))
 				}
 			}
-			failed := make([]string, 0)
+			failedKeys := make([]string, 0)
 			if got != nil && got.Errors != nil {
 				for _, erroredObject := range got.Errors {
-					failed = append(failed, *(erroredObject.Key))
+					failedKeys = append(failedKeys, *(erroredObject.Key))
 				}
 			}
-			if !(reflect.DeepEqual(deleted, tt.wantSuccess) && reflect.DeepEqual(failed, tt.wantFailed)) {
+			if !(reflect.DeepEqual(deletedKeys, tt.wantSuccess) && reflect.DeepEqual(failedKeys, tt.wantFailed)) {
 				t.Errorf("Service.DeleteObjects() got unexpected output")
 			}
 		})

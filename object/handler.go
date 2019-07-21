@@ -207,14 +207,14 @@ func (h Handler) DeleteObjects(
 		return nil, err
 	}
 
-	deleted := make([]string, 0, len(deleteResponse.Deleted))
+	deletedKeys := make([]string, 0, len(deleteResponse.Deleted))
 	for _, deletedObject := range deleteResponse.Deleted {
-		deleted = append(deleted, *(deletedObject.Key))
+		deletedKeys = append(deletedKeys, *(deletedObject.Key))
 	}
 
-	failed := make([]string, 0, len(deleteResponse.Errors))
+	failedKeys := make([]string, 0, len(deleteResponse.Errors))
 	for _, erroredObject := range deleteResponse.Errors {
-		failed = append(failed, *(erroredObject.Key))
+		failedKeys = append(failedKeys, *(erroredObject.Key))
 	}
 
 	return &pb.DeleteObjectsResponse{Deleted: deleted, Failed: failed}, nil

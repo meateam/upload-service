@@ -380,7 +380,7 @@ func (s *Service) UploadAbort(ctx aws.Context, uploadID *string, key *string, bu
 
 // DeleteObjects repeated string  deletes an object from s3,
 // It receives a bucket and a slice of *strings to be deleted
-// and returns the deleted objects or notor an error if exists.
+// and returns the deleted and errored objects or an error if exists.
 func (s *Service) DeleteObjects(ctx aws.Context, bucket *string, keys []*string) (*s3.DeleteObjectsOutput, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("context is required")
