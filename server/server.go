@@ -11,8 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	ilogger "github.com/meateam/elasticsearch-logger"
+	"github.com/meateam/upload-service/object"
 	pb "github.com/meateam/upload-service/proto"
-	"github.com/meateam/upload-service/upload"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -51,12 +51,12 @@ type UploadServer struct {
 	logger              *logrus.Logger
 	tcpPort             string
 	healthCheckInterval int
-	uploadHandler       *upload.Handler
+	objectHandler       *object.Handler
 }
 
 // GetHandler returns a copy of the underlying upload handler.
-func (s *UploadServer) GetHandler() *upload.Handler {
-	return s.uploadHandler
+func (s *UploadServer) GetHandler() *object.Handler {
+	return s.objectHandler
 }
 
 // Serve accepts incoming connections on the listener `lis`, creating a new
@@ -139,11 +139,11 @@ func NewServer(logger *logrus.Logger) *UploadServer {
 	)
 
 	// Create a upload handler and register it on the grpc server.
-	uploadHandler := upload.NewHandler(
-		upload.NewService(s3Client),
+	objectHandler := object.NewHandler(
+		object.NewService(s3Client),
 		logger,
 	)
-	pb.RegisterUploadServer(grpcServer, uploadHandler)
+	pb.RegisterUploadServer(grpcServer, objectHandler)
 
 	// Create a health server and register it on the grpc server.
 	healthServer := health.NewServer()
@@ -154,7 +154,7 @@ func NewServer(logger *logrus.Logger) *UploadServer {
 		logger:              logger,
 		tcpPort:             viper.GetString(configPort),
 		healthCheckInterval: viper.GetInt(configHealthCheckInterval),
-		uploadHandler:       uploadHandler,
+		objectHandler:       objectHandler,
 	}
 
 	// Health check validation goroutine worker.
@@ -205,7 +205,7 @@ func serverLoggerInterceptor(logger *logrus.Logger) []grpc.ServerOption {
 // healthCheckWorker is running an infinite loop that sets the serving status once
 // in s.healthCheckInterval seconds.
 func (s UploadServer) healthCheckWorker(healthServer *health.Server) {
-	s3Client := s.uploadHandler.GetService().GetS3Client()
+	s3Client := s.objectHandler.GetService().GetS3Client()
 
 	for {
 		_, err := s3Client.ListBuckets(&s3.ListBucketsInput{})

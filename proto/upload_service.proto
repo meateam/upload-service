@@ -15,6 +15,7 @@ service Upload {
     rpc UploadPart(stream UploadPartRequest) returns (stream UploadPartResponse) {}
     rpc UploadComplete(UploadCompleteRequest) returns (UploadCompleteResponse) {}
     rpc UploadAbort(UploadAbortRequest) returns (UploadAbortResponse) {}
+    rpc DeleteObjects(DeleteObjectsRequest) returns (DeleteObjectsResponse) {}
 }
 
 // UploadMediaRequest is the request for media upload
@@ -151,4 +152,22 @@ message UploadAbortRequest {
 // UploadAbortResponse is the response for aborting resumable upload
 message UploadAbortResponse {
     bool status = 1;
+}
+
+// DeleteObjectsRequest is the request for deleting objects.
+message DeleteObjectsRequest {
+    // The bucket to delete the objects from.
+    string bucket = 1;
+
+    // The object keys to be deleted from s3.
+    repeated string keys = 2;
+}
+
+// DeleteObjectsResponse is the response for deleting objects.
+message DeleteObjectsResponse {
+    // The object keys that deleted successfully.
+    repeated string deleted = 1;
+
+    // The object keys that failed to delete.
+    repeated string failed = 2;
 }

@@ -1,4 +1,4 @@
-package upload_test
+package object_test
 
 import (
 	"bytes"
@@ -17,8 +17,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/meateam/upload-service/internal/test"
+	"github.com/meateam/upload-service/object"
 	"github.com/meateam/upload-service/server"
-	"github.com/meateam/upload-service/upload"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
@@ -58,7 +58,7 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 	return lis.Dial()
 }
 
-func TestUploadService_UploadFile(t *testing.T) {
+func TestService_UploadFile(t *testing.T) {
 	metadata := make(map[string]*string)
 	metadata["test"] = aws.String("testt")
 	type fields struct {
@@ -177,7 +177,7 @@ func TestUploadService_UploadFile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := upload.NewService(tt.fields.s3Client)
+			s := object.NewService(tt.fields.s3Client)
 
 			got, err := s.UploadFile(
 				tt.args.ctx,
@@ -199,16 +199,16 @@ func TestUploadService_UploadFile(t *testing.T) {
 	}
 }
 
-func TestUploadHandler_UploadMedia(t *testing.T) {
+func TestHandler_UploadMedia(t *testing.T) {
 	hugefile := make([]byte, 5<<20)
 	if _, err := rand.Read(hugefile); err != nil {
 		t.Errorf("Could not generate file with error: %v", err)
 	}
 
-	uploadservice := upload.NewService(s3Client)
+	uploadservice := object.NewService(s3Client)
 
 	type fields struct {
-		UploadService *upload.Service
+		UploadService *object.Service
 	}
 	type args struct {
 		ctx     context.Context
@@ -328,7 +328,7 @@ func TestUploadHandler_UploadMedia(t *testing.T) {
 	}
 }
 
-func TestUploadService_UploadInit(t *testing.T) {
+func TestService_UploadInit(t *testing.T) {
 	metadata := make(map[string]*string)
 	metadata["test"] = aws.String("testt")
 	type fields struct {
@@ -463,7 +463,7 @@ func TestUploadService_UploadInit(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := upload.NewService(tt.fields.s3Client)
+			s := object.NewService(tt.fields.s3Client)
 
 			got, err := s.UploadInit(tt.args.ctx, tt.args.key, tt.args.bucket, tt.args.contentType, tt.args.metadata)
 			if (err != nil) != tt.wantErr {
@@ -477,13 +477,13 @@ func TestUploadService_UploadInit(t *testing.T) {
 	}
 }
 
-func TestUploadHandler_UploadInit(t *testing.T) {
+func TestHandler_UploadInit(t *testing.T) {
 	metadata := make(map[string]string)
 	metadata["test"] = "testt"
-	uploadservice := upload.NewService(s3Client)
+	uploadservice := object.NewService(s3Client)
 
 	type fields struct {
-		UploadService *upload.Service
+		UploadService *object.Service
 	}
 	type args struct {
 		ctx     context.Context
@@ -624,7 +624,7 @@ func TestUploadHandler_UploadInit(t *testing.T) {
 }
 
 //nolint:gocyclo
-func TestUploadService_UploadPart(t *testing.T) {
+func TestService_UploadPart(t *testing.T) {
 	metadata := make(map[string]*string)
 	metadata["test"] = aws.String("meta")
 	file := make([]byte, 50<<20)
@@ -822,7 +822,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := upload.NewService(tt.fields.s3Client)
+			s := object.NewService(tt.fields.s3Client)
 
 			initOutput, err := s.UploadInit(
 				tt.args.ctx,
@@ -854,7 +854,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 	}
 
 	t.Run("UploadPart - nil UploadID", func(t *testing.T) {
-		s := upload.NewService(s3Client)
+		s := object.NewService(s3Client)
 
 		ctx := context.Background()
 		got, err := s.UploadPart(
@@ -874,7 +874,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 		}
 	})
 	t.Run("UploadPart - empty UploadID", func(t *testing.T) {
-		s := upload.NewService(s3Client)
+		s := object.NewService(s3Client)
 
 		ctx := context.Background()
 		got, err := s.UploadPart(
@@ -895,7 +895,7 @@ func TestUploadService_UploadPart(t *testing.T) {
 	})
 }
 
-func TestUploadService_UploadComplete(t *testing.T) {
+func TestService_UploadComplete(t *testing.T) {
 	metadata := make(map[string]*string)
 	metadata["test"] = aws.String("meta")
 	file := make([]byte, 50<<20)
@@ -1019,7 +1019,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := upload.NewService(tt.fields.s3Client)
+			s := object.NewService(tt.fields.s3Client)
 
 			initOutput, err := s.UploadInit(
 				tt.args.ctx,
@@ -1057,7 +1057,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 		})
 	}
 	t.Run("UploadComplete - empty uploadID ", func(t *testing.T) {
-		s := upload.NewService(s3Client)
+		s := object.NewService(s3Client)
 
 		ctx := context.Background()
 		got, err := s.UploadComplete(ctx, aws.String(""), aws.String("tests.txt"), aws.String("testbucket"))
@@ -1072,7 +1072,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 	})
 
 	t.Run("UploadComplete - nil uploadID ", func(t *testing.T) {
-		s := upload.NewService(s3Client)
+		s := object.NewService(s3Client)
 
 		ctx := context.Background()
 		got, err := s.UploadComplete(ctx, nil, aws.String("tests.txt"), aws.String("testbucket"))
@@ -1087,7 +1087,7 @@ func TestUploadService_UploadComplete(t *testing.T) {
 	})
 }
 
-func TestUploadHandler_UploadMultipart(t *testing.T) {
+func TestHandler_UploadMultipart(t *testing.T) {
 	// Init global values to use in tests.
 	file := make([]byte, 5<<20)
 	if _, err := rand.Read(file); err != nil {
@@ -1257,7 +1257,7 @@ func TestUploadHandler_UploadMultipart(t *testing.T) {
 	}
 }
 
-func TestUploadService_UploadAbort(t *testing.T) {
+func TestService_UploadAbort(t *testing.T) {
 	metadata := make(map[string]*string)
 	metadata["test"] = aws.String("testt")
 	file := make([]byte, 50<<20)
@@ -1294,7 +1294,7 @@ func TestUploadService_UploadAbort(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := upload.NewService(tt.fields.s3Client)
+			s := object.NewService(tt.fields.s3Client)
 
 			initOutput, err := s.UploadInit(tt.args.ctx, tt.args.key, tt.args.bucket, aws.String("text/plain"), metadata)
 			if err != nil {
@@ -1327,6 +1327,388 @@ func TestUploadService_UploadAbort(t *testing.T) {
 	}
 }
 
-// TODO: TestUploadHandler_UploadAbort
-// TODO: TestUploadHandler_UploadComplete
-// TODO: TestUploadHandler_UploadPart
+func TestService_DeleteObjects(t *testing.T) {
+	uploadservice := object.NewService(s3Client)
+	key1, err := uploadservice.UploadFile(
+		context.Background(),
+		bytes.NewReader([]byte("Hello, World!")),
+		aws.String("file1"),
+		aws.String("testbucket"),
+		aws.String("text/plain"),
+		nil,
+	)
+	if err != nil {
+		t.Errorf("Could not create file with error: %v", err)
+	}
+	key2, err := uploadservice.UploadFile(
+		context.Background(),
+		bytes.NewReader([]byte("Hello, World!")),
+		aws.String("file2"),
+		aws.String("testbucket"),
+		aws.String("text/plain"),
+		nil,
+	)
+	if err != nil {
+		t.Errorf("Could not create file with error: %v", err)
+	}
+	key3, err := uploadservice.UploadFile(
+		context.Background(),
+		bytes.NewReader([]byte("Hello, World!")),
+		aws.String("file3"),
+		aws.String("testbucket"),
+		aws.String("text/plain"),
+		nil,
+	)
+	if err != nil {
+		t.Errorf("Could not create file with error: %v", err)
+	}
+	key4, err := uploadservice.UploadFile(
+		context.Background(),
+		bytes.NewReader([]byte("Hello, World!")),
+		aws.String("file4"),
+		aws.String("testbucket"),
+		aws.String("text/plain"),
+		nil,
+	)
+	if err != nil {
+		t.Errorf("Could not create file with error: %v", err)
+	}
+	type fields struct {
+		s3Client *s3.S3
+	}
+	type args struct {
+		ctx    aws.Context
+		bucket *string
+		keys   []*string
+	}
+	tests := []struct {
+		name        string
+		fields      fields
+		args        args
+		wantSuccess []string
+		wantFailed  []string
+		wantErr     bool
+	}{
+		{
+			name: "delete only one object",
+			fields: fields{
+				s3Client: s3Client,
+			},
+			args: args{
+				keys:   []*string{key1},
+				bucket: aws.String("testbucket"),
+				ctx:    context.Background(),
+			},
+			wantSuccess: []string{*key1},
+			wantFailed:  []string{},
+			wantErr:     false,
+		},
+		{
+			name: "delete two objects",
+			fields: fields{
+				s3Client: s3Client,
+			},
+			args: args{
+				keys:   []*string{key2, key3},
+				bucket: aws.String("testbucket"),
+				ctx:    context.Background(),
+			},
+			wantSuccess: []string{*key2, *key3},
+			wantFailed:  []string{},
+			wantErr:     false,
+		},
+		{
+			name: "delete valid and invalid objects",
+			fields: fields{
+				s3Client: s3Client,
+			},
+			args: args{
+				keys:   []*string{key4, aws.String("oneoneone")},
+				bucket: aws.String("testbucket"),
+				ctx:    context.Background(),
+			},
+			wantSuccess: []string{*key4, "oneoneone"},
+			wantFailed:  []string{},
+			wantErr:     false,
+		},
+		{
+			name: "delete invalid object",
+			fields: fields{
+				s3Client: s3Client,
+			},
+			args: args{
+				keys:   []*string{aws.String("oneoneone")},
+				bucket: aws.String("testbucket"),
+				ctx:    context.Background(),
+			},
+			wantSuccess: []string{"oneoneone"},
+			wantFailed:  []string{},
+			wantErr:     false,
+		},
+		{
+			name: "delete nil keys",
+			fields: fields{
+				s3Client: s3Client,
+			},
+			args: args{
+				keys:   nil,
+				bucket: aws.String("testbucket"),
+				ctx:    context.Background(),
+			},
+			wantSuccess: []string{},
+			wantFailed:  []string{},
+			wantErr:     true,
+		},
+		{
+			name: "delete nil bucket",
+			fields: fields{
+				s3Client: s3Client,
+			},
+			args: args{
+				keys:   []*string{aws.String("valid")},
+				bucket: nil,
+				ctx:    context.Background(),
+			},
+			wantSuccess: []string{},
+			wantFailed:  []string{},
+			wantErr:     true,
+		},
+		{
+			name: "delete empty bucket",
+			fields: fields{
+				s3Client: s3Client,
+			},
+			args: args{
+				keys:   []*string{aws.String("valid")},
+				bucket: aws.String(""),
+				ctx:    context.Background(),
+			},
+			wantSuccess: []string{},
+			wantFailed:  []string{},
+			wantErr:     true,
+		},
+		{
+			name: "delete empty key",
+			fields: fields{
+				s3Client: s3Client,
+			},
+			args: args{
+				keys:   []*string{},
+				bucket: aws.String("testbucket"),
+				ctx:    context.Background(),
+			},
+			wantSuccess: []string{},
+			wantFailed:  []string{},
+			wantErr:     true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := object.NewService(tt.fields.s3Client)
+			got, err := s.DeleteObjects(tt.args.ctx, tt.args.bucket, tt.args.keys)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.DeleteObjects() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			deleted := make([]string, 0)
+			if got != nil && got.Deleted != nil {
+				for _, deletedObject := range got.Deleted {
+					deleted = append(deleted, *(deletedObject.Key))
+				}
+			}
+			failed := make([]string, 0)
+			if got != nil && got.Errors != nil {
+				for _, erroredObject := range got.Errors {
+					failed = append(failed, *(erroredObject.Key))
+				}
+			}
+			if !(reflect.DeepEqual(deleted, tt.wantSuccess) && reflect.DeepEqual(failed, tt.wantFailed)) {
+				t.Errorf("Service.DeleteObjects() got unexpected output")
+			}
+		})
+	}
+}
+
+func TestHandler_DeleteObjects(t *testing.T) {
+	uploadservice := object.NewService(s3Client)
+	key1, err := uploadservice.UploadFile(
+		context.Background(),
+		bytes.NewReader([]byte("Hello, World!")),
+		aws.String("file1"),
+		aws.String("testbucket"),
+		aws.String("text/plain"),
+		nil,
+	)
+	if err != nil {
+		t.Errorf("Could not create file with error: %v", err)
+	}
+	key2, err := uploadservice.UploadFile(
+		context.Background(),
+		bytes.NewReader([]byte("Hello, World!")),
+		aws.String("file2"),
+		aws.String("testbucket"),
+		aws.String("text/plain"),
+		nil,
+	)
+	if err != nil {
+		t.Errorf("Could not create file with error: %v", err)
+	}
+	key3, err := uploadservice.UploadFile(
+		context.Background(),
+		bytes.NewReader([]byte("Hello, World!")),
+		aws.String("file3"),
+		aws.String("testbucket"),
+		aws.String("text/plain"),
+		nil,
+	)
+	if err != nil {
+		t.Errorf("Could not create file with error: %v", err)
+	}
+	key4, err := uploadservice.UploadFile(
+		context.Background(),
+		bytes.NewReader([]byte("Hello, World!")),
+		aws.String("file4"),
+		aws.String("testbucket"),
+		aws.String("text/plain"),
+		nil,
+	)
+	if err != nil {
+		t.Errorf("Could not create file with error: %v", err)
+	}
+	type args struct {
+		ctx     context.Context
+		request *pb.DeleteObjectsRequest
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *pb.DeleteObjectsResponse
+		wantErr bool
+	}{
+		{
+			name: "delete only one object",
+			args: args{
+				ctx: context.Background(),
+				request: &pb.DeleteObjectsRequest{
+					Bucket: "testbucket",
+					Keys:   []string{*key1},
+				},
+			},
+			want: &pb.DeleteObjectsResponse{
+				Deleted: []string{*key1},
+				Failed:  []string{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "delete two objects",
+			args: args{
+				ctx: context.Background(),
+				request: &pb.DeleteObjectsRequest{
+					Bucket: "testbucket",
+					Keys:   []string{*key2, *key3},
+				},
+			},
+			want: &pb.DeleteObjectsResponse{
+				Deleted: []string{*key2, *key3},
+				Failed:  []string{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "delete valid and invalid objects",
+			args: args{
+				ctx: context.Background(),
+				request: &pb.DeleteObjectsRequest{
+					Bucket: "testbucket",
+					Keys:   []string{*key4, "oneoneone"},
+				},
+			},
+			want: &pb.DeleteObjectsResponse{
+				Deleted: []string{*key4, "oneoneone"},
+				Failed:  []string{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "delete invalid object",
+			args: args{
+				ctx: context.Background(),
+				request: &pb.DeleteObjectsRequest{
+					Bucket: "testbucket",
+					Keys:   []string{"oneoneone"},
+				},
+			},
+			want: &pb.DeleteObjectsResponse{
+				Deleted: []string{"oneoneone"},
+				Failed:  []string{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "delete empty bucket",
+			args: args{
+				ctx: context.Background(),
+				request: &pb.DeleteObjectsRequest{
+					Bucket: "",
+					Keys:   []string{"valid"},
+				},
+			},
+			want: &pb.DeleteObjectsResponse{
+				Deleted: []string{},
+				Failed:  []string{},
+			},
+			wantErr: true,
+		},
+		{
+			name: "delete empty key",
+			args: args{
+				ctx: context.Background(),
+				request: &pb.DeleteObjectsRequest{
+					Bucket: "testbucket",
+					Keys:   []string{""},
+				},
+			},
+			want: &pb.DeleteObjectsResponse{
+				Deleted: []string{},
+				Failed:  []string{},
+			},
+			wantErr: true,
+		},
+	}
+
+	// Create connection to server
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
+	if err != nil {
+		t.Fatalf("Failed to dial bufnet: %v", err)
+	}
+	defer conn.Close()
+
+	// Create client
+	client := pb.NewUploadClient(conn)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := client.DeleteObjects(tt.args.ctx, tt.args.request)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Handler.DeleteObjects() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			// It's  needed, don't know why.
+			gotFailed := append([]string{}, got.GetFailed()...)
+			wantFailed := append([]string{}, tt.want.GetFailed()...)
+			gotDeleted := append([]string{}, got.GetDeleted()...)
+			wantDeleted := append([]string{}, tt.want.GetDeleted()...)
+
+			if !(reflect.DeepEqual(gotDeleted, wantDeleted) && reflect.DeepEqual(gotFailed, wantFailed)) {
+				t.Errorf("Handler.DeleteObjects() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// TODO: TestHandler_UploadAbort
+// TODO: TestHandler_UploadComplete
+// TODO: TestHandler_UploadPart

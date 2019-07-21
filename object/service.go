@@ -1,4 +1,4 @@
-package upload
+package object
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"github.com/meateam/upload-service/bucket"
 )
 
-// Service is a structure used for uploading files to S3
+// Service is a structure used for operations on S3 objects.
 type Service struct {
 	s3Client *s3.S3
 	mu       sync.Mutex
@@ -33,7 +33,7 @@ func (s *Service) ensureBucketExists(ctx aws.Context, bucketName *string) error 
 		return fmt.Errorf("context is required")
 	}
 
-	bucketService := bucket.NewService(s.s3Client)
+	bucketService := bucket.NewService(s.GetS3Client())
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	bucketExists := bucketService.BucketExists(ctx, bucketName)
@@ -376,4 +376,43 @@ func (s *Service) UploadAbort(ctx aws.Context, uploadID *string, key *string, bu
 	}
 
 	return true, nil
+}
+
+// DeleteObjects repeated string  deletes an object from s3,
+// It receives a bucket and a slice of *strings to be deleted
+// and returns the deleted objects or notor an error if exists.
+func (s *Service) DeleteObjects(ctx aws.Context, bucket *string, keys []*string) (*s3.DeleteObjectsOutput, error) {
+	if ctx == nil {
+		return nil, fmt.Errorf("context is required")
+	}
+
+	if bucket == nil || *bucket == "" {
+		return nil, fmt.Errorf("bucket name is required")
+	}
+
+	if keys == nil || len(keys) <= 0 {
+		return nil, fmt.Errorf("keys are required")
+	}
+
+	objects := make([]*s3.ObjectIdentifier, 0, len(keys))
+
+	for _, key := range keys {
+		objects = append(objects, &s3.ObjectIdentifier{
+			Key: key,
+		})
+	}
+
+	deleteObjectsInput := &s3.DeleteObjectsInput{
+		Bucket: bucket,
+		Delete: &s3.Delete{
+			Objects: objects,
+			Quiet:   aws.Bool(false),
+		},
+	}
+
+	deleteResponse, err := s.s3Client.DeleteObjectsWithContext(ctx, deleteObjectsInput)
+	if err != nil {
+		return nil, fmt.Errorf("failed to delete objects: %v", err)
+	}
+	return deleteResponse, nil
 }
