@@ -15,7 +15,7 @@ require (
 
 replace github.com/meateam/upload-service/bucket => ./bucket
 
-replace github.com/meateam/upload-service/upload => ./upload
+replace github.com/meateam/upload-service/object => ./object
 
 replace github.com/meateam/upload-service/internal/test => ./internal/test
 
