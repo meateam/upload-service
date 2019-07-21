@@ -1521,7 +1521,6 @@ func TestService_DeleteObjects(t *testing.T) {
 				for _, erroredObject := range got.Errors {
 					failed = append(failed, *(erroredObject.Key))
 				}
-
 			}
 			if !(reflect.DeepEqual(deleted, tt.wantSuccess) && reflect.DeepEqual(failed, tt.wantFailed)) {
 				t.Errorf("Service.DeleteObjects() got unexpected output")
@@ -1530,51 +1529,185 @@ func TestService_DeleteObjects(t *testing.T) {
 	}
 }
 
-// TODO:
-// func TestHandler_DeleteObjects(t *testing.T) {
-// 	uploadservice := object.NewService(s3Client)
+func TestHandler_DeleteObjects(t *testing.T) {
+	uploadservice := object.NewService(s3Client)
+	key1, err := uploadservice.UploadFile(
+		context.Background(),
+		bytes.NewReader([]byte("Hello, World!")),
+		aws.String("file1"),
+		aws.String("testbucket"),
+		aws.String("text/plain"),
+		nil,
+	)
+	if err != nil {
+		t.Errorf("Could not create file with error: %v", err)
+	}
+	key2, err := uploadservice.UploadFile(
+		context.Background(),
+		bytes.NewReader([]byte("Hello, World!")),
+		aws.String("file2"),
+		aws.String("testbucket"),
+		aws.String("text/plain"),
+		nil,
+	)
+	if err != nil {
+		t.Errorf("Could not create file with error: %v", err)
+	}
+	key3, err := uploadservice.UploadFile(
+		context.Background(),
+		bytes.NewReader([]byte("Hello, World!")),
+		aws.String("file3"),
+		aws.String("testbucket"),
+		aws.String("text/plain"),
+		nil,
+	)
+	if err != nil {
+		t.Errorf("Could not create file with error: %v", err)
+	}
+	key4, err := uploadservice.UploadFile(
+		context.Background(),
+		bytes.NewReader([]byte("Hello, World!")),
+		aws.String("file4"),
+		aws.String("testbucket"),
+		aws.String("text/plain"),
+		nil,
+	)
+	if err != nil {
+		t.Errorf("Could not create file with error: %v", err)
+	}
+	type args struct {
+		ctx     context.Context
+		request *pb.DeleteObjectsRequest
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *pb.DeleteObjectsResponse
+		wantErr bool
+	}{
+		{
+			name: "delete only one object",
+			args: args{
+				ctx: context.Background(),
+				request: &pb.DeleteObjectsRequest{
+					Bucket: "testbucket",
+					Keys:   []string{*key1},
+				},
+			},
+			want: &pb.DeleteObjectsResponse{
+				Deleted: []string{*key1},
+				Failed:  []string{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "delete two objects",
+			args: args{
+				ctx: context.Background(),
+				request: &pb.DeleteObjectsRequest{
+					Bucket: "testbucket",
+					Keys:   []string{*key2, *key3},
+				},
+			},
+			want: &pb.DeleteObjectsResponse{
+				Deleted: []string{*key2, *key3},
+				Failed:  []string{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "delete valid and invalid objects",
+			args: args{
+				ctx: context.Background(),
+				request: &pb.DeleteObjectsRequest{
+					Bucket: "testbucket",
+					Keys:   []string{*key4, "oneoneone"},
+				},
+			},
+			want: &pb.DeleteObjectsResponse{
+				Deleted: []string{*key4, "oneoneone"},
+				Failed:  []string{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "delete invalid object",
+			args: args{
+				ctx: context.Background(),
+				request: &pb.DeleteObjectsRequest{
+					Bucket: "testbucket",
+					Keys:   []string{"oneoneone"},
+				},
+			},
+			want: &pb.DeleteObjectsResponse{
+				Deleted: []string{"oneoneone"},
+				Failed:  []string{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "delete empty bucket",
+			args: args{
+				ctx: context.Background(),
+				request: &pb.DeleteObjectsRequest{
+					Bucket: "",
+					Keys:   []string{"valid"},
+				},
+			},
+			want: &pb.DeleteObjectsResponse{
+				Deleted: []string{},
+				Failed:  []string{},
+			},
+			wantErr: true,
+		},
+		{
+			name: "delete empty key",
+			args: args{
+				ctx: context.Background(),
+				request: &pb.DeleteObjectsRequest{
+					Bucket: "testbucket",
+					Keys:   []string{""},
+				},
+			},
+			want: &pb.DeleteObjectsResponse{
+				Deleted: []string{},
+				Failed:  []string{},
+			},
+			wantErr: true,
+		},
+	}
 
-// 	type fields struct {
-// 		UploadService *object.Service
-// 	}
-// 	type args struct {
-// 		ctx     context.Context
-// 		request *pb.DeleteObjectsRequest
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		fields  fields
-// 		args    args
-// 		want    *pb.DeleteObjectsResponse
-// 		wantErr bool
-// 	}{
-// 		// TODO: Add test cases.
-// 	}
+	// Create connection to server
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
+	if err != nil {
+		t.Fatalf("Failed to dial bufnet: %v", err)
+	}
+	defer conn.Close()
 
-// 	// Create connection to server
-// 	ctx := context.Background()
-// 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
-// 	if err != nil {
-// 		t.Fatalf("Failed to dial bufnet: %v", err)
-// 	}
-// 	defer conn.Close()
+	// Create client
+	client := pb.NewUploadClient(conn)
 
-// 	// Create client
-// 	client := pb.NewUploadClient(conn)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := client.DeleteObjects(tt.args.ctx, tt.args.request)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Handler.DeleteObjects() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			got, err := client.DeleteObjects(tt.args.ctx, tt.args.request)
-// 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("Handler.DeleteObjects() error = %v, wantErr %v", err, tt.wantErr)
-// 				return
-// 			}
-// 			if !reflect.DeepEqual(got, tt.want) {
-// 				t.Errorf("Handler.DeleteObjects() = %v, want %v", got, tt.want)
-// 			}
-// 		})
-// 	}
-// }
+			// It's  needed, don't know why.
+			gotFailed := append([]string{}, got.GetFailed()...)
+			wantFailed := append([]string{}, tt.want.GetFailed()...)
+			gotDeleted := append([]string{}, got.GetDeleted()...)
+			wantDeleted := append([]string{}, tt.want.GetDeleted()...)
+
+			if !(reflect.DeepEqual(gotDeleted, wantDeleted) && reflect.DeepEqual(gotFailed, wantFailed)) {
+				t.Errorf("Handler.DeleteObjects() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 
 // TODO: TestHandler_UploadAbort
 // TODO: TestHandler_UploadComplete
