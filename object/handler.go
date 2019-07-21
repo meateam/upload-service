@@ -217,5 +217,5 @@ func (h Handler) DeleteObjects(
 		failedKeys = append(failedKeys, *(erroredObject.Key))
 	}
 
-	return &pb.DeleteObjectsResponse{Deleted: deleted, Failed: failed}, nil
+	return &pb.DeleteObjectsResponse{Deleted: deletedKeys, Failed: failedKeys}, nil
 }
