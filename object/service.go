@@ -332,6 +332,11 @@ func (s *Service) HeadObject(ctx aws.Context, key *string, bucket *string) (*s3.
 		return nil, fmt.Errorf("context is required")
 	}
 
+	err := s.ensureBucketExists(ctx, bucket)
+	if err != nil {
+		return nil, fmt.Errorf("failed to HeadObject %s/%s: %v", *bucket, *key, err)
+	}
+
 	obj, err := s.s3Client.HeadObjectWithContext(ctx, &s3.HeadObjectInput{Bucket: bucket, Key: key})
 	if err != nil {
 		return nil, fmt.Errorf("failed to head object")
@@ -396,6 +401,11 @@ func (s *Service) DeleteObjects(ctx aws.Context, bucket *string, keys []*string)
 
 	if keys == nil || len(keys) <= 0 {
 		return nil, fmt.Errorf("keys are required")
+	}
+
+	err := s.ensureBucketExists(ctx, bucket)
+	if err != nil {
+		return nil, fmt.Errorf("failed to DeleteObjects bucket, %s, does not exist: %v", *bucket, err)
 	}
 
 	objects := make([]*s3.ObjectIdentifier, 0, len(keys))
