@@ -32,6 +32,9 @@ func (s *Service) ensureBucketExists(ctx aws.Context, bucketName *string) error 
 	if ctx == nil {
 		return fmt.Errorf("context is required")
 	}
+	if bucketName == nil {
+		return fmt.Errorf("bucketName is required")
+	}
 
 	bucketService := bucket.NewService(s.GetS3Client())
 	s.mu.Lock()
@@ -48,6 +51,7 @@ func (s *Service) ensureBucketExists(ctx aws.Context, bucketName *string) error 
 			return fmt.Errorf("failed to create bucket %s: bucket does not exist", *bucketName)
 		}
 	}
+	*bucketName = bucketService.NormalizeCephBucketName(*bucketName)
 
 	return nil
 }
