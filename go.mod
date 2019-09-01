@@ -13,6 +13,8 @@ require (
 	google.golang.org/grpc v1.21.0
 )
 
+replace git.apache.org/thrift.git => github.com/apache/thrift v0.12.0
+
 replace github.com/meateam/upload-service/bucket => ./bucket
 
 replace github.com/meateam/upload-service/object => ./object
