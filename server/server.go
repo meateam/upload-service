@@ -2,6 +2,7 @@ package server
 
 import (
 	"net"
+	"net/http"
 	"strings"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	pb "github.com/meateam/upload-service/proto"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"go.elastic.co/apm/module/apmhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -111,6 +113,7 @@ func NewServer(logger *logrus.Logger) *UploadServer {
 		Region:           aws.String(s3Region),
 		DisableSSL:       aws.Bool(!s3SSL),
 		S3ForcePathStyle: aws.Bool(true),
+		HTTPClient:       apmhttp.WrapClient(http.DefaultClient),
 	}
 
 	// If no logger is given, create a new default logger for the server.
