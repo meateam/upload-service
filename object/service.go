@@ -245,6 +245,7 @@ func (s *Service) ListUploadParts(
 		UploadId: uploadID,
 		Key:      key,
 		Bucket:   bucket,
+		MaxParts: aws.Int64(10000),
 	}
 
 	parts, err := s.s3Client.ListPartsWithContext(ctx, listPartsInput)
