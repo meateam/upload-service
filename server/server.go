@@ -2,6 +2,7 @@ package server
 
 import (
 	"net"
+	"net/http"
 	"strings"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	pb "github.com/meateam/upload-service/proto"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"go.elastic.co/apm/module/apmhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -23,7 +25,7 @@ import (
 const (
 	configPort                 = "tcp_port"
 	configHealthCheckInterval  = "health_check_interval"
-	configElasticAPMIgnoreURLS = "elastic_apm_ignore_urls"
+	configElasticAPMIgnoreURLS = "us_elastic_apm_ignore_urls"
 	configS3Endpoint           = "s3_endpoint"
 	configS3Token              = "s3_token"
 	configS3AccessKey          = "s3_access_key"
@@ -111,6 +113,7 @@ func NewServer(logger *logrus.Logger) *UploadServer {
 		Region:           aws.String(s3Region),
 		DisableSSL:       aws.Bool(!s3SSL),
 		S3ForcePathStyle: aws.Bool(true),
+		HTTPClient:       apmhttp.WrapClient(http.DefaultClient),
 	}
 
 	// If no logger is given, create a new default logger for the server.

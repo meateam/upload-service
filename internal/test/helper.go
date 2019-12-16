@@ -12,7 +12,8 @@ func EmptyAndDeleteBucket(s3Client *s3.S3, bucket string) error {
 	log.Print("removing objects from S3 bucket : ", bucket)
 
 	params := &s3.ListObjectsInput{
-		Bucket: aws.String(bucket),
+		Bucket:  aws.String(bucket),
+		MaxKeys: aws.Int64(10000),
 	}
 
 	for {
