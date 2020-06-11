@@ -54,6 +54,38 @@ func (s Service) CreateBucket(ctx aws.Context, bucket *string) (bool, error) {
 		return false, fmt.Errorf("failed to create bucket: %v", err)
 	}
 
+	versioningInput := &s3.PutBucketVersioningInput{
+		Bucket: aws.String(normalizedBucketName), // Required
+		VersioningConfiguration: &s3.VersioningConfiguration{
+			MFADelete: aws.String("Disabled"),
+			Status:    aws.String("Enabled"),
+		}, // Required
+	}
+
+	// Enable versioning mode
+	_, err = s.s3Client.PutBucketVersioning(versioningInput)
+	if err != nil {
+		_, err := s.deleteBucket(normalizedBucketName)
+		if err != nil {
+			return false, fmt.Errorf("failed to create bucket: %v", err)
+		}
+		return false, fmt.Errorf("failed to create bucket: %v", err)
+	}
+	return true, nil
+}
+
+// deleteBucket delete a bucket with the given bucket name and returns true or false
+// if it's deleted or not, returns an error if it didn't.
+func (s Service) deleteBucket(bucket string) (bool, error) {
+	input := &s3.DeleteBucketInput{
+		Bucket: aws.String(bucket), // Required
+	}
+
+	_, err := s.s3Client.DeleteBucket(input)
+	if err != nil {
+		return false, fmt.Errorf("failed to remove bucket: %v", err)
+	}
+
 	return true, nil
 }
 

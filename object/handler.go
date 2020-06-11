@@ -202,6 +202,7 @@ func (h Handler) DeleteObjects(
 		ctx,
 		aws.String(request.GetBucket()),
 		aws.StringSlice(request.GetKeys()),
+		aws.StringSlice(request.GetKeys()), // YOSEF
 	)
 	if err != nil {
 		return nil, err

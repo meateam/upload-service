@@ -56,6 +56,38 @@ func (s *Service) ensureBucketExists(ctx aws.Context, bucketName *string) error 
 	return nil
 }
 
+func (s *Service) enableVersioningMode(bucketName string) error {
+	if &bucketName == nil {
+		return fmt.Errorf("bucketName is required")
+	}
+
+	versioningInput := &s3.GetBucketVersioningInput{
+		Bucket: aws.String(bucketName),
+	}
+
+	result, err := s.s3Client.GetBucketVersioning(versioningInput)
+	if err != nil {
+		return err
+	}
+
+	if result.Status == nil {
+		versioningInput := &s3.PutBucketVersioningInput{
+			Bucket: aws.String(bucketName), // Required
+			VersioningConfiguration: &s3.VersioningConfiguration{
+				MFADelete: aws.String("Disabled"),
+				Status:    aws.String("Enabled"),
+			}, // Required
+		}
+	
+		// Enable versioning mode
+		_, err = s.s3Client.PutBucketVersioning(versioningInput)
+		if err != nil {
+			return fmt.Errorf("failed to enable versioning mode: %v", err)
+		}
+	}
+	return nil
+}
+
 // UploadFile uploads a file to the given bucket and key in S3.
 // If metadata is a non-nil map then it will be uploaded with the file.
 // Returns the file's location and an error if any occurred.
@@ -86,6 +118,11 @@ func (s *Service) UploadFile(
 	err := s.ensureBucketExists(ctx, bucket)
 	if err != nil {
 		return nil, fmt.Errorf("failed to upload file to %s/%s: %v", *bucket, *key, err)
+	}
+
+	err = s.enableVersioningMode(*bucket)
+	if err != nil {
+		return nil, fmt.Errorf("failed to enable versioning mode to %s: %v", *bucket, err)
 	}
 
 	// Create an uploader with S3 client and custom options
@@ -391,7 +428,7 @@ func (s *Service) UploadAbort(ctx aws.Context, uploadID *string, key *string, bu
 // DeleteObjects repeated string  deletes an object from s3,
 // It receives a bucket and a slice of *strings to be deleted
 // and returns the deleted and errored objects or an error if exists.
-func (s *Service) DeleteObjects(ctx aws.Context, bucket *string, keys []*string) (*s3.DeleteObjectsOutput, error) {
+func (s *Service) DeleteObjects(ctx aws.Context, bucket *string, keys []*string, versions []*string) (*s3.DeleteObjectsOutput, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("context is required")
 	}
@@ -404,6 +441,14 @@ func (s *Service) DeleteObjects(ctx aws.Context, bucket *string, keys []*string)
 		return nil, fmt.Errorf("keys are required")
 	}
 
+	if versions == nil || len(versions) <= 0 {
+		return nil, fmt.Errorf("versions are required")
+	}
+
+	if len(keys) != len(versions) {
+		return nil, fmt.Errorf("Keys and versions mast to be same langth")
+	}
+
 	err := s.ensureBucketExists(ctx, bucket)
 	if err != nil {
 		return nil, fmt.Errorf("failed to DeleteObjects bucket, %s, does not exist: %v", *bucket, err)
@@ -413,7 +458,8 @@ func (s *Service) DeleteObjects(ctx aws.Context, bucket *string, keys []*string)
 
 	for _, key := range keys {
 		objects = append(objects, &s3.ObjectIdentifier{
-			Key: key,
+			Key:       key,
+			VersionId: key, // YOSEF change version id
 		})
 	}
 
