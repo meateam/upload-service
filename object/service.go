@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"sync"
+	"net/url"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -430,4 +431,56 @@ func (s *Service) DeleteObjects(ctx aws.Context, bucket *string, keys []*string)
 		return nil, fmt.Errorf("failed to delete objects: %v", err)
 	}
 	return deleteResponse, nil
+}
+
+
+// CopyObject copy an object between source and destination buckets
+// It receives a source bucket, object key and a destination bucket 
+// Returns the copy object and errored objects or an error if exists.
+func (s *Service) CopyObject(ctx aws.Context, bucketSrc *string, bucketDest *string, key *string) (*s3.CopyObjectOutput, error) {
+	if ctx == nil {
+		return nil, fmt.Errorf("context is required")
+	}
+
+	if bucketSrc == nil || *bucketSrc == "" {
+		return nil, fmt.Errorf("bucket source name is required")
+	}
+
+	if bucketDest == nil || *bucketDest == "" {
+		return nil, fmt.Errorf("bucket dest name is required")
+	}
+
+	if key == nil || *key == "" {
+		return nil, fmt.Errorf("key is required")
+	}
+
+	// TODO: check if we need to create a new bucket if the bucket doesn't exist
+	// (I assume that the source must be exist, the dest not required)
+	if err := s.ensureBucketExists(ctx, bucketSrc); err != nil {
+		return nil, fmt.Errorf("failed to CopyObject from bucket, %s, does not exist: %v", *bucketSrc, err)
+	}
+
+	if err := s.ensureBucketExists(ctx, bucketDest); err != nil {
+		return nil, fmt.Errorf("failed to CopyObject from bucket, %s, does not exist: %v", *bucketSrc, err)
+	}
+
+	if _, err := s.s3Client.HeadObject(&s3.HeadObjectInput{Bucket: bucketSrc, Key: key}); err != nil {
+		return nil, fmt.Errorf("failed to CopyObject from bucket, %s, because object %s does not exist: %v", *bucketSrc, *key, err)
+	}
+
+	// CopySource field expected url for the object
+	objectToCopy := url.QueryEscape(*bucketSrc + "/" + *key)
+
+	copyObjectinput := &s3.CopyObjectInput{
+		Bucket: bucketDest,
+		CopySource: aws.String(objectToCopy),
+		Key: key,
+	}
+
+	copyObjectResponse, err := s.s3Client.CopyObjectWithContext(ctx, copyObjectinput)
+	if err != nil {
+		return nil, fmt.Errorf("failed to copy object: %v", err)
+	}
+
+	return copyObjectResponse, nil
 }

@@ -16,6 +16,8 @@ service Upload {
     rpc UploadComplete(UploadCompleteRequest) returns (UploadCompleteResponse) {}
     rpc UploadAbort(UploadAbortRequest) returns (UploadAbortResponse) {}
     rpc DeleteObjects(DeleteObjectsRequest) returns (DeleteObjectsResponse) {}
+    rpc CopyObject(CopyObjectRequest) returns (CopyObjectResponse) {}
+
 }
 
 // UploadMediaRequest is the request for media upload
@@ -170,4 +172,22 @@ message DeleteObjectsResponse {
 
     // The object keys that failed to delete.
     repeated string failed = 2;
+}
+
+// CopyObjectRequest is the request for copy object between buckets.
+message CopyObjectRequest {
+    // The source bucket of the object.
+    string bucketSrc = 1;
+
+    // The source bucket of the object.
+    string bucketDest = 2;
+
+    // The object key to be copied.
+    string key = 3;
+}
+
+// CopyObjectResponse is the response for copy an object.
+message CopyObjectResponse {
+    // The location that the file was copied to
+    string location = 1;
 }
