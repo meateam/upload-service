@@ -1971,8 +1971,7 @@ func TestService_CopyObject(t *testing.T) {
 				keySrc:     aws.String("file2"),
 				keyDest:    aws.String("newfile2"),
 			},
-			want:    aws.String("file2"),
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "source bucket doesnt exist",
