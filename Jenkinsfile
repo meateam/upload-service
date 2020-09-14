@@ -15,12 +15,12 @@ pipeline {
         }
         stage('build dockerfile of tests') {
             steps {
-              sh "docker build -t unittest/${env.GIT_REPO_NAME}:${env.GIT_SHORT_COMMIT} -f test.Dockerfile ." 
+              sh "docker build -t unittest -f test.Dockerfile ." 
             }  
         }
         stage('run unit tests') {   
             steps {
-                sh "docker run unittest/${env.GIT_REPO_NAME}:${env.GIT_SHORT_COMMIT}"  
+                sh "docker run unittest"  
             }
         post {
           always {
