@@ -17,6 +17,7 @@ service Upload {
     rpc UploadAbort(UploadAbortRequest) returns (UploadAbortResponse) {}
     rpc DeleteObjects(DeleteObjectsRequest) returns (DeleteObjectsResponse) {}
     rpc CopyObject(CopyObjectRequest) returns (CopyObjectResponse) {}
+    rpc MoveObject(MoveObjectRequest) returns (MoveObjectResponse) {}
 
 }
 
