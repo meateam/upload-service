@@ -434,47 +434,63 @@ func (s *Service) DeleteObjects(ctx aws.Context, bucket *string, keys []*string)
 }
 
 
-// CopyObject copy an object between source and destination buckets
+// CopyObject - copy an object between source and destination buckets
 // It receives a source bucket, object key and a destination bucket 
-// Returns the copy object and errored objects or an error if exists.
-func (s *Service) CopyObject(ctx aws.Context, bucketSrc *string, bucketDest *string, key *string) (*s3.CopyObjectOutput, error) {
+func (s *Service) CopyObject(
+	ctx aws.Context,
+	bucketSrc *string, 
+	bucketDest *string, 
+	keySrc *string,  
+	keyDest *string,
+	) (*string, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("context is required")
 	}
 
 	if bucketSrc == nil || *bucketSrc == "" {
-		return nil, fmt.Errorf("bucket source name is required")
+		return nil, fmt.Errorf("source bucket name is required")
 	}
 
 	if bucketDest == nil || *bucketDest == "" {
-		return nil, fmt.Errorf("bucket dest name is required")
+		return nil, fmt.Errorf("destination bucket name is required")
 	}
 
-	if key == nil || *key == "" {
-		return nil, fmt.Errorf("key is required")
+	if keySrc == nil || *keySrc == "" {
+		return nil, fmt.Errorf("object's src key is required")
 	}
 
-	// TODO: check if we need to create a new bucket if the bucket doesn't exist
-	// (I assume that the source must be exist, the dest not required)
-	if err := s.ensureBucketExists(ctx, bucketSrc); err != nil {
+	if keyDest == nil || *keyDest == "" {
+		return nil, fmt.Errorf("object's dest key is required")
+	}
+
+	
+	// Check if the source bucket exists 
+	// if it doesn't exist, we don't need to create a new bucket,
+	// because it would be empty with no object to copy
+	headBucketinput := &s3.HeadBucketInput{Bucket: bucketSrc}
+
+	if _, err := s.s3Client.HeadBucket(headBucketinput); err != nil {
 		return nil, fmt.Errorf("failed to CopyObject from bucket, %s, does not exist: %v", *bucketSrc, err)
 	}
 
+	// Check if the object exists
+	sourceObjectResponse, err := s.HeadObject(ctx, keySrc, bucketSrc)
+	if err != nil {
+		return nil, fmt.Errorf("failed to CopyObject from bucket, %s, because object %s does not exist: %v", *bucketSrc, *keySrc, err)
+	}
+
+	// Check if the destination bucket exist 
 	if err := s.ensureBucketExists(ctx, bucketDest); err != nil {
 		return nil, fmt.Errorf("failed to CopyObject from bucket, %s, does not exist: %v", *bucketSrc, err)
 	}
 
-	if _, err := s.s3Client.HeadObject(&s3.HeadObjectInput{Bucket: bucketSrc, Key: key}); err != nil {
-		return nil, fmt.Errorf("failed to CopyObject from bucket, %s, because object %s does not exist: %v", *bucketSrc, *key, err)
-	}
-
-	// CopySource field expected url for the object
-	objectToCopy := url.QueryEscape(*bucketSrc + "/" + *key)
+	// Parse the location of the object to URL
+	objectToCopy := url.QueryEscape(*bucketSrc + "/" + *keySrc)
 
 	copyObjectinput := &s3.CopyObjectInput{
 		Bucket: bucketDest,
-		CopySource: aws.String(objectToCopy),
-		Key: key,
+		CopySource: aws.String(objectToCopy), // (CopySource field expected url)
+		Key: keyDest,
 	}
 
 	copyObjectResponse, err := s.s3Client.CopyObjectWithContext(ctx, copyObjectinput)
@@ -482,5 +498,16 @@ func (s *Service) CopyObject(ctx aws.Context, bucketSrc *string, bucketDest *str
 		return nil, fmt.Errorf("failed to copy object: %v", err)
 	}
 
-	return copyObjectResponse, nil
+	// Compare the ETags between the source and the destination buckets (kind of a checksum)
+	if *sourceObjectResponse.ETag != *copyObjectResponse.CopyObjectResult.ETag {
+		return nil, fmt.Errorf(
+			"failed to copy object %s from source bucket, %s, because something went wrong in the process of copying the object to bucket %s and the ETag has changed : %v",
+			*keySrc,
+			*bucketSrc,
+			*bucketDest,
+			err)
+	}
+	
+
+	return keySrc, nil
 }
