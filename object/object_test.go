@@ -1716,8 +1716,20 @@ func TestHandler_CopyObject(t *testing.T) {
 	uploadservice := object.NewService(s3Client)
 	_, err := uploadservice.UploadFile(
 		context.Background(),
-		bytes.NewReader([]byte("Hello, World!")),
+		bytes.NewReader([]byte("Hello, World")),
 		aws.String("file1"),
+		aws.String("testbucket"),
+		aws.String("text/plain"),
+		nil,
+	)
+	if err != nil {
+		t.Errorf("Could not create file with error: %v", err)
+	}
+
+	_, err = uploadservice.UploadFile(
+		context.Background(),
+		bytes.NewReader([]byte("Hello, World!")),
+		aws.String("file2"),
 		aws.String("testbucket"),
 		aws.String("text/plain"),
 		nil,
@@ -1751,10 +1763,11 @@ func TestHandler_CopyObject(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.CopyObjectRequest{
-					BucketSrc:  "testbucket",
-					BucketDest: "testbucket1",
-					KeySrc:     "file1",
-					KeyDest:    "newfile1",
+					BucketSrc:            "testbucket",
+					BucketDest:           "testbucket1",
+					KeySrc:               "file1",
+					KeyDest:              "newfile1",
+					IsDeleteSourceObject: false,
 				},
 			},
 			want:    &pb.CopyObjectResponse{Copied: "file1"},
@@ -1768,10 +1781,11 @@ func TestHandler_CopyObject(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.CopyObjectRequest{
-					BucketSrc:  "notexistbucket",
-					BucketDest: "testbucket1",
-					KeySrc:     "file1",
-					KeyDest:    "newfile1",
+					BucketSrc:            "notexistbucket",
+					BucketDest:           "testbucket1",
+					KeySrc:               "file1",
+					KeyDest:              "newfile1",
+					IsDeleteSourceObject: false,
 				},
 			},
 			wantErr: true,
@@ -1784,10 +1798,11 @@ func TestHandler_CopyObject(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.CopyObjectRequest{
-					BucketSrc:  "testbucket",
-					BucketDest: "testbucket1",
-					KeySrc:     "notexistobject",
-					KeyDest:    "newfile1",
+					BucketSrc:            "testbucket",
+					BucketDest:           "testbucket1",
+					KeySrc:               "notexistobject",
+					KeyDest:              "newfile1",
+					IsDeleteSourceObject: false,
 				},
 			},
 			wantErr: true,
@@ -1800,10 +1815,11 @@ func TestHandler_CopyObject(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.CopyObjectRequest{
-					BucketSrc:  "testbucket",
-					BucketDest: "",
-					KeySrc:     "notexistobject",
-					KeyDest:    "newfile1",
+					BucketSrc:            "testbucket",
+					BucketDest:           "",
+					KeySrc:               "file1",
+					KeyDest:              "newfile1",
+					IsDeleteSourceObject: false,
 				},
 			},
 			wantErr: true,
@@ -1816,10 +1832,11 @@ func TestHandler_CopyObject(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.CopyObjectRequest{
-					BucketSrc:  "",
-					BucketDest: "testbucket1",
-					KeySrc:     "notexistobject",
-					KeyDest:    "newfile1",
+					BucketSrc:            "",
+					BucketDest:           "testbucket1",
+					KeySrc:               "file1",
+					KeyDest:              "newfile1",
+					IsDeleteSourceObject: false,
 				},
 			},
 			wantErr: true,
@@ -1832,10 +1849,11 @@ func TestHandler_CopyObject(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.CopyObjectRequest{
-					BucketSrc:  "testbucket",
-					BucketDest: "testbucket1",
-					KeySrc:     "",
-					KeyDest:    "newfile1",
+					BucketSrc:            "testbucket",
+					BucketDest:           "testbucket1",
+					KeySrc:               "",
+					KeyDest:              "newfile1",
+					IsDeleteSourceObject: false,
 				},
 			},
 			wantErr: true,
@@ -1848,13 +1866,32 @@ func TestHandler_CopyObject(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				request: &pb.CopyObjectRequest{
-					BucketSrc:  "testbucket",
-					BucketDest: "testbucket1",
-					KeySrc:     "notexistobject",
-					KeyDest:    "",
+					BucketSrc:            "testbucket",
+					BucketDest:           "testbucket1",
+					KeySrc:               "file1",
+					KeyDest:              "",
+					IsDeleteSourceObject: false,
 				},
 			},
 			wantErr: true,
+		},
+		{
+			name: "move object",
+			fields: fields{
+				s3Client: s3Client,
+			},
+			args: args{
+				ctx: context.Background(),
+				request: &pb.CopyObjectRequest{
+					BucketSrc:            "testbucket",
+					BucketDest:           "testbucket1",
+					KeySrc:               "file2",
+					KeyDest:              "newfile2",
+					IsDeleteSourceObject: true,
+				},
+			},
+			want:    &pb.CopyObjectResponse{Copied: "file2"},
+			wantErr: false,
 		},
 	}
 
@@ -1893,6 +1930,7 @@ func TestService_CopyObject(t *testing.T) {
 	// Upload files for testing
 	// file size less than 5GB
 	uploadservice := object.NewService(s3Client)
+
 	_, err := uploadservice.UploadFile(
 		context.Background(),
 		bytes.NewReader([]byte("Hello, World!")),
@@ -1914,7 +1952,7 @@ func TestService_CopyObject(t *testing.T) {
 	_, err = uploadservice.UploadFile(
 		context.Background(),
 		bytes.NewReader(hugefile),
-		aws.String("file2"),
+		aws.String("filehuge"),
 		aws.String("testbucket"),
 		aws.String("text/plain"),
 		nil,
@@ -1968,8 +2006,8 @@ func TestService_CopyObject(t *testing.T) {
 				ctx:        context.Background(),
 				bucketSrc:  aws.String("testbucket"),
 				bucketDest: aws.String("testbucket1"),
-				keySrc:     aws.String("file2"),
-				keyDest:    aws.String("newfile2"),
+				keySrc:     aws.String("filehuge"),
+				keyDest:    aws.String("newfilehuge"),
 			},
 			wantErr: true,
 		},
@@ -2082,185 +2120,6 @@ func TestService_CopyObject(t *testing.T) {
 			// https://golang.org/pkg/reflect/#DeepEqual
 			if got != nil && !cmp.Equal(tt.want, got, cmpopts.IgnoreUnexported(pb.CopyObjectResponse{})) {
 				t.Errorf("UploadHandler.CopyObject() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestHandler_MoveObject(t *testing.T) {
-	// Upload files for testing
-	uploadservice := object.NewService(s3Client)
-
-	_, err := uploadservice.UploadFile(
-		context.Background(),
-		bytes.NewReader([]byte("Hello, World!")),
-		aws.String("file1"),
-		aws.String("testbucket"),
-		aws.String("text/plain"),
-		nil,
-	)
-	if err != nil {
-		t.Errorf("Could not create file with error: %v", err)
-	}
-
-	// Init structs
-	type fields struct {
-		s3Client *s3.S3
-	}
-
-	type args struct {
-		ctx     aws.Context
-		request *pb.MoveObjectRequest
-	}
-
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    *pb.MoveObjectResponse
-		wantErr bool
-	}{
-		{
-			name: "move one object",
-			fields: fields{
-				s3Client: s3Client,
-			},
-			args: args{
-				ctx: context.Background(),
-				request: &pb.MoveObjectRequest{
-					BucketSrc:  "testbucket",
-					BucketDest: "testbucket1",
-					KeySrc:     "file1",
-					KeyDest:    "newfile1",
-				},
-			},
-			want:    &pb.MoveObjectResponse{Moved: "file1"},
-			wantErr: false,
-		},
-		{
-			name: "source bucket doesnt exist",
-			fields: fields{
-				s3Client: s3Client,
-			},
-			args: args{
-				ctx: context.Background(),
-				request: &pb.MoveObjectRequest{
-					BucketSrc:  "notexistbucket",
-					BucketDest: "testbucket1",
-					KeySrc:     "file1",
-					KeyDest:    "newfile1",
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "source object doesnt exist",
-			fields: fields{
-				s3Client: s3Client,
-			},
-			args: args{
-				ctx: context.Background(),
-				request: &pb.MoveObjectRequest{
-					BucketSrc:  "testbucket",
-					BucketDest: "testbucket1",
-					KeySrc:     "notexistobject",
-					KeyDest:    "newfile1",
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "dest bucket is null",
-			fields: fields{
-				s3Client: s3Client,
-			},
-			args: args{
-				ctx: context.Background(),
-				request: &pb.MoveObjectRequest{
-					BucketSrc:  "testbucket",
-					BucketDest: "",
-					KeySrc:     "notexistobject",
-					KeyDest:    "newfile1",
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "source bucket is null",
-			fields: fields{
-				s3Client: s3Client,
-			},
-			args: args{
-				ctx: context.Background(),
-				request: &pb.MoveObjectRequest{
-					BucketSrc:  "",
-					BucketDest: "testbucket1",
-					KeySrc:     "notexistobject",
-					KeyDest:    "newfile1",
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "source key is null",
-			fields: fields{
-				s3Client: s3Client,
-			},
-			args: args{
-				ctx: context.Background(),
-				request: &pb.MoveObjectRequest{
-					BucketSrc:  "testbucket",
-					BucketDest: "testbucket1",
-					KeySrc:     "",
-					KeyDest:    "newfile1",
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "dest key is null",
-			fields: fields{
-				s3Client: s3Client,
-			},
-			args: args{
-				ctx: context.Background(),
-				request: &pb.MoveObjectRequest{
-					BucketSrc:  "testbucket",
-					BucketDest: "testbucket1",
-					KeySrc:     "notexistobject",
-					KeyDest:    "",
-				},
-			},
-			wantErr: true,
-		},
-	}
-
-	// Create connection to server
-	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
-	if err != nil {
-		t.Fatalf("Failed to dial bufnet: %v", err)
-	}
-	defer conn.Close()
-
-	// Create client
-	client := pb.NewUploadClient(conn)
-
-	// Iterate over test cases
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := client.MoveObject(tt.args.ctx, tt.args.request)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.MoveObject() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			// TODO: check if deepequal or cmp.equal
-			// reflect.DeepEqual is often incorrectly used to compare two like structs
-			// cmp.Equal is a better tool for comparing structs.
-			// https://golang.org/pkg/reflect/#DeepEqual
-			if got != nil && !cmp.Equal(tt.want, got, cmpopts.IgnoreUnexported(pb.MoveObjectResponse{})) {
-				t.Errorf("UploadHandler.MoveObject() = %v, want %v", got, tt.want)
 			}
 		})
 	}
