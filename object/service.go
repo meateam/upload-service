@@ -477,7 +477,6 @@ func (s *Service) CopyObject(
 	}
 
 	// Check if the object exists
-	// s.mu.Lock()
 	sourceObjectResponse, err := s.s3Client.HeadObjectWithContext(ctx, &s3.HeadObjectInput{Bucket: bucketSrc, Key: keySrc})
 	if err != nil {
 		return nil, fmt.Errorf("failed to CopyObject from bucket, %s, because object %s does not exist: %v", *bucketSrc, *keySrc, err)
@@ -493,7 +492,6 @@ func (s *Service) CopyObject(
 	}
 
 	copyObjectResponse, err := s.s3Client.CopyObjectWithContext(ctx, copyObjectinput)
-	// defer s.mu.Unlock()
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to copy object: %v", err)
