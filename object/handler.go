@@ -219,3 +219,56 @@ func (h Handler) DeleteObjects(
 
 	return &pb.DeleteObjectsResponse{Deleted: deletedKeys, Failed: failedKeys}, nil
 }
+
+
+// CopyObject - copy an object from source to destination bucket
+// Returns the ETag of the new object. The ETag reflects only changes to the
+// contents of an object, not its metadata. The source and destination ETag
+// is identical for a successfully copied object.
+func (h Handler) CopyObject(
+	ctx context.Context,
+	request *pb.CopyObjectRequest,
+) (*pb.CopyObjectResponse, error) {
+	_, err := h.service.CopyObject(
+		ctx,
+		aws.String(request.GetBucketSrc()),
+		aws.String(request.GetBucketDest()),
+		aws.String(request.GetKeySrc()),
+		aws.String(request.GetKeyDest()),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	
+	return &pb.CopyObjectResponse{ Copied: request.GetKeySrc() }, nil
+}
+
+// MoveObject - copy an object from source to destination bucket and delete the source
+func (h Handler) MoveObject(
+	ctx context.Context,
+	request *pb.MoveObjectRequest,
+) (*pb.MoveObjectResponse, error) {
+	_, err := h.service.CopyObject(
+		ctx,
+		aws.String(request.GetBucketSrc()),
+		aws.String(request.GetBucketDest()),
+		aws.String(request.GetKeySrc()),
+		aws.String(request.GetKeyDest()),
+	)
+	if err != nil {
+		return nil, err
+	}
+	
+	// Delete the object from the source bucket
+	deleteResponse, err := h.service.DeleteObjects(
+		ctx,
+		aws.String(request.GetBucketSrc()),
+		aws.StringSlice([]string{request.GetKeySrc()}),
+	)
+	if err != nil || len(deleteResponse.Errors) > 0 {
+		return nil, err
+	}
+
+	return &pb.MoveObjectResponse{Moved: request.GetKeySrc()}, nil
+}
