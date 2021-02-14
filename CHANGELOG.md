@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [v2.0.1] - 2021-02-13
+## [v2.0.1] - 2021-02-14
+
+### Added
+
+- CI: Add CI process
 
 ### Changed
 - ISSUE([99](https://github.com/meateam/drive-project/issues/99)): update pkg, delete unused pkg and update deps
@@ -25,4 +29,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [unreleased]: https://github.com/meateam/upload-service/compare/master...develop
 [v2.0.0]: https://github.com/meateam/upload-service/compare/v1.3...v2.0.0
 [v2.0.1]: https://github.com/meateam/upload-service/compare/v2.0.0...v2.0.1
-
