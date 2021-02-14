@@ -85,14 +85,14 @@ pipeline {
             steps {
               script{
                 if(env.GIT_BRANCH == 'master') {
-                  sh "docker build -t  drivehub.azurecr.io/meateam/${env.GIT_REPO_NAME}:master_${env.GIT_SHORT_COMMIT} ."
-                  sh "docker push  drivehub.azurecr.io/meateam/${env.GIT_REPO_NAME}:master_${env.GIT_SHORT_COMMIT}"
+                  sh "docker build -t  drivehub.azurecr.io/meateam/${env.GIT_REPO_NAME}:master ."
+                  sh "docker push  drivehub.azurecr.io/meateam/${env.GIT_REPO_NAME}:master"
                 }
                 else if(env.GIT_BRANCH == 'develop') {
                   sh "docker build -t  drivehub.azurecr.io/meateam/${env.GIT_REPO_NAME}:develop ."
                   sh "docker push  drivehub.azurecr.io/meateam/${env.GIT_REPO_NAME}:develop"  
                 }
-              } 
+              }  
             }
             post {
               always {
