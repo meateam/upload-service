@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
+- CI: Add CI process
 - ISSUE([99](https://github.com/meateam/drive-project/issues/99)): update pkg, delete unused pkg and update deps
 
 
