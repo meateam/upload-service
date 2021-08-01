@@ -1515,13 +1515,17 @@ func TestService_DeleteObjects(t *testing.T) {
 			deletedKeys := make([]string, 0)
 			if got != nil && got.Deleted != nil {
 				for _, deletedObject := range got.Deleted {
-					deletedKeys = append(deletedKeys, *(deletedObject.Key))
+					if deletedObject.Key != nil {
+						deletedKeys = append(deletedKeys, *(deletedObject.Key))
+					}
 				}
 			}
 			failedKeys := make([]string, 0)
 			if got != nil && got.Errors != nil {
 				for _, erroredObject := range got.Errors {
-					failedKeys = append(failedKeys, *(erroredObject.Key))
+					if erroredObject.Key != nil {
+						failedKeys = append(failedKeys, *(erroredObject.Key))
+					}
 				}
 			}
 			if !(reflect.DeepEqual(deletedKeys, tt.wantSuccess) && reflect.DeepEqual(failedKeys, tt.wantFailed)) {
