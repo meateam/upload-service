@@ -1,6 +1,8 @@
 package object
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/url"
@@ -107,7 +109,6 @@ func (s *Service) UploadFile(
 
 	// Upload a new object with the file's data to the user's bucket
 	output, err := uploader.UploadWithContext(ctx, input)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to upload data to %s/%s: %v", *bucket, *key, err)
 	}
@@ -477,9 +478,15 @@ func (s *Service) CopyObject(
 	}
 
 	// Check if the object exists
-	sourceObjectResponse, err := s.s3Client.HeadObjectWithContext(ctx, &s3.HeadObjectInput{Bucket: bucketSrc, Key: keySrc})
+	sourceObjectResponse, err := s.s3Client.GetObject(&s3.GetObjectInput{Bucket: bucketSrc, Key: keySrc})
 	if err != nil {
 		return nil, fmt.Errorf("failed to CopyObject from bucket, %s, because object %s does not exist: %v", *bucketSrc, *keySrc, err)
+	}
+
+	// Hash the source object
+	hashSoucre, err := hashObject(sourceObjectResponse.Body)
+	if err != nil {
+		return nil, fmt.Errorf("cant hash source from bueckt %s, object %s,  %v", *bucketSrc, *keySrc, err)
 	}
 
 	// Parse the location of the object to URL
@@ -491,16 +498,25 @@ func (s *Service) CopyObject(
 		Key:        keyDest,
 	}
 
-	copyObjectResponse, err := s.s3Client.CopyObjectWithContext(ctx, copyObjectinput)
-
-	if err != nil {
+	if _, err := s.s3Client.CopyObjectWithContext(ctx, copyObjectinput); err != nil {
 		return nil, fmt.Errorf("failed to copy object: %v", err)
 	}
 
-	// Compare the ETags between the source and the destination buckets (kind of a checksum)
-	if *sourceObjectResponse.ETag != *copyObjectResponse.CopyObjectResult.ETag {
+	destObjectResponse, err := s.s3Client.GetObject(&s3.GetObjectInput{Bucket: bucketDest, Key: keyDest})
+	if err != nil {
+		return nil, fmt.Errorf("failed to CopyObject from bucket, %s, because object %s does not exist: %v", *bucketSrc, *keySrc, err)
+	}
+
+	// Hash the dest object
+	hashDest, err := hashObject(destObjectResponse.Body)
+	if err != nil {
+		return nil, fmt.Errorf("cant hash dest from bucket %s, object %s,  %v", *bucketDest, *keyDest, err)
+	}
+
+	// Compare the hash between the source and the destination buckets (kind of a checksum)
+	if hashDest != hashSoucre {
 		return nil, fmt.Errorf(
-			"failed to copy object %s from source bucket, %s, to destination bucket %s. the ETag has changed : %v",
+			"failed to copy object %s from source bucket, %s, to destination bucket %s. the hash has changed : %v",
 			*keySrc,
 			*bucketSrc,
 			*bucketDest,
@@ -508,4 +524,13 @@ func (s *Service) CopyObject(
 	}
 
 	return keySrc, nil
+}
+
+func hashObject(body io.Reader) (string, error) {
+	hash := md5.New()
+	if _, err := io.Copy(hash, body); err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }
