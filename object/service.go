@@ -515,6 +515,16 @@ func (s *Service) CopyObject(
 
 	// Compare the hash between the source and the destination buckets (kind of a checksum)
 	if hashDest != hashSoucre {
+		// Delete the object from the source bucket
+		deleteResponse, err := s.DeleteObjects(
+			ctx,
+			aws.String(*bucketDest),
+			aws.StringSlice([]string{*keyDest}),
+		)
+		if err != nil || len(deleteResponse.Errors) > 0 {
+			return nil, err
+		}
+
 		return nil, fmt.Errorf(
 			"failed to copy object %s from source bucket, %s, to destination bucket %s. the hash has changed : %v",
 			*keySrc,

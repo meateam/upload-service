@@ -240,18 +240,5 @@ func (h Handler) CopyObject(
 		return nil, err
 	}
 
-	if request.GetIsDeleteSourceObject() == true {
-
-		// Delete the object from the source bucket
-		deleteResponse, err := h.service.DeleteObjects(
-			ctx,
-			aws.String(request.GetBucketSrc()),
-			aws.StringSlice([]string{request.GetKeySrc()}),
-		)
-		if err != nil || len(deleteResponse.Errors) > 0 {
-			return nil, err
-		}
-	}
-
 	return &pb.CopyObjectResponse{Copied: request.GetKeySrc()}, nil
 }

@@ -186,9 +186,6 @@ message CopyObjectRequest {
 
     // New object key.
     string keyDest = 4;
-
-    // Boolean option for delete the source object
-    bool isDeleteSourceObject = 5;
 }
 
 // CopyObjectResponse is the response for copy an object.
